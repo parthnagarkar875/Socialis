@@ -1,6 +1,6 @@
 import sqlite3
 
-conn1 = sqlite3.connect('sample.db')
+conn1 = sqlite3.connect('twitter.db')
 print("Opened the database successfully")
 
 conn = conn1.cursor()
@@ -15,7 +15,7 @@ conn = conn1.cursor()
 #       VALUES (2, 'Parth')")
 
 # conn1.commit()
-output=conn.execute("SELECT COUNT(*) FROM SAMPLE")
+output=conn.execute("SELECT COUNT(*) FROM FACEBOOK")
 
 # conn.execute("DELETE from SAMPLE where ID = 2")
 # conn.execute("DELETE from SAMPLE where ID = 1")
