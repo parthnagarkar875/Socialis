@@ -4,6 +4,7 @@ import numpy
 import re
 import tweepy
 import settings
+import sqlite3
 import mysql.connector
 import pandas as pd
 from textblob import TextBlob
@@ -38,15 +39,23 @@ class MyStreamListener(tweepy.StreamListener):
         print(status.text)
         print("Long: {}, Lati: {}".format(longitude, latitude))
 
-        if mydb.is_connected():
-            mycursor = mydb.cursor()
-            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)".format(settings.TABLE_NAME)
-            val = (id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, \
-                user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
+        myconn =sqlite3.connect('twitter.db')
+
+        if self.check_conn(myconn) == True:        
+            mycursor = myconn.cursor()
+            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
+            val = (id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
             mycursor.execute(sql, val)
-            mydb.commit()
+            myconn.commit()
+            print("Inserted")
             mycursor.close()
 
+    def check_conn(self, conn):
+        try:
+            conn.cursor()
+            return True
+        except Exception as ex:
+            return False
 
     def on_error(self, status_code):
         '''
@@ -73,16 +82,16 @@ def deEmojify(text):
     else:
         return None
 
-def check_conn(conn):
-    try:
-        conn.cursor()
-        return True
-    except Exception as ex:
-        return False
+auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
+auth.set_access_token(credentials.access_token, credentials.access_token_secret)    
+api = tweepy.API(auth,wait_on_rate_limit=True)
+
+myStreamListener = MyStreamListener()
+myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener)
 
 myconn =sqlite3.connect('twitter.db')
 
-if check_conn(myconn) == True:        
+if myStreamListener.check_conn(myconn) == True:        
     mycursor = myconn.cursor()
     try:
         output=myconn.execute("SELECT COUNT(*) FROM {}".format(settings.TABLE_NAME))
@@ -93,12 +102,7 @@ if check_conn(myconn) == True:
 
     myconn.close()
 
-auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
-auth.set_access_token(credentials.access_token, credentials.access_token_secret)    
-api = tweepy.API(auth,wait_on_rate_limit=True)
 
-myStreamListener = MyStreamListener()
-myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener)
 myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
 # Close the MySQL connection as it finished
 # However, this won't be reached as the stream listener won't stop automatically
