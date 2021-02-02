@@ -14,26 +14,31 @@ conn = conn1.cursor()
 # # conn.execute("INSERT INTO SAMPLE (ID,NAME) \
 # #       VALUES (2, 'Parth')")
 
-# # conn1.commit()
+# # # conn1.commit()
 output=conn.execute("SELECT * FROM FACEBOOK")
 
+i = 0
 for row in output:
-   print("ID = ", row[0])
+   if i>20:
+      break
+   else:
+      print("Tweet Text: ",row[2])
+      i = i+1
 
 
-# # conn.execute("DELETE from SAMPLE where ID = 2")
-# # conn.execute("DELETE from SAMPLE where ID = 1")
+# conn.execute("DROP TABLE FACEBOOK")
+# # # conn.execute("DELETE from SAMPLE where ID = 1")
 
-result=output.fetchall()
-print(result)
+# result=output.fetchall()
+# print(result)
 
 # # for row in output:
 # #     print("ID:", row[0])
 # #     print("Name:", row[1])
     
 
-# # conn.commit()
-# conn.close()
+conn1.commit()
+conn1.close()
 
 # import the module 
 # import tweepy 
@@ -51,7 +56,7 @@ print(result)
 # api = tweepy.API(auth) 
 
 # # the ID of the status 
-# id = 1355977929176604675
+# id = 1356354417444970496
 
 # # fetching the status 
 # status = api.get_status(id) 

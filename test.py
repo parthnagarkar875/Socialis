@@ -1,15 +1,47 @@
 import credentials # Import api/access_token keys from credentials.py
-from sqlite3 import OperationalError
-import numpy
 import re
 import tweepy
 import settings
-import sqlite3
 import mysql.connector
 import pandas as pd
 from textblob import TextBlob
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+import spacy
+import sqlite3
+from sqlite3 import OperationalError
+import numpy
+import preprocessor as p
 
 class MyStreamListener(tweepy.StreamListener):
+
+    nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
+
+    def lemma(self,comment):
+        doc = MyStreamListener.nlp(comment)
+        return " ".join([token.lemma_ for token in doc])    
+
+    def deEmojify(self, text):
+        try:             
+            regrex_pattern = re.compile(pattern = "["
+                u"\U0001F600-\U0001F64F"  # emoticons
+                u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                                "]+", flags = re.UNICODE)
+            return regrex_pattern.sub(r'',text)
+        except TypeError: 
+            pass
+
+    def preprocess(self, tweet):    
+        try:
+            text = re.sub(r'http\S+', '', tweet.lower(), flags=re.MULTILINE)
+            res = re.sub(r'[^\w\s]', '', text)
+            deemo = self.deEmojify(res)
+            le = self.lemma(deemo)
+            return le
+        except TypeError: 
+            pass
     
     def on_status(self, status):
         if status.retweeted:
@@ -18,14 +50,15 @@ class MyStreamListener(tweepy.StreamListener):
         # Extract info from tweets
         id_str = status.id_str
         created_at = status.created_at
-        text = deEmojify(status.text)    # Pre-processing the text  
+        # text = self.preprocess(status.text)    # Pre-processing the text  
+        text1 = p.clean(status.text)
+        text = re.sub(r'[^\w\s]', '', text1)
         sentiment = TextBlob(text).sentiment
         polarity = sentiment.polarity
         subjectivity = sentiment.subjectivity
-        
         user_created_at = status.user.created_at
-        user_location = deEmojify(status.user.location)
-        user_description = deEmojify(status.user.description)
+        user_location = self.deEmojify(status.user.location)
+        user_description = self.deEmojify(status.user.description)
         user_followers_count =status.user.followers_count
         longitude = None
         latitude = None
@@ -37,6 +70,7 @@ class MyStreamListener(tweepy.StreamListener):
         favorite_count = status.favorite_count
         
         print(status.text)
+        print(text)
         print("Long: {}, Lati: {}".format(longitude, latitude))
 
         myconn =sqlite3.connect('twitter.db')
@@ -66,21 +100,6 @@ class MyStreamListener(tweepy.StreamListener):
             # return False to disconnect the stream
             return False
 
-
-def clean_tweet(self, tweet): 
-    ''' 
-    Use simple regex statemnents to clean tweet text by removing links and special characters
-    '''
-    return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t]) \
-                                |(\w+:\/\/\S+)", " ", tweet).split()) 
-def deEmojify(text):
-    '''
-    Strip all non-ASCII characters to remove emoji characters
-    '''
-    if text:
-        return text.encode('ascii', 'ignore').decode('ascii')
-    else:
-        return None
 
 auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
 auth.set_access_token(credentials.access_token, credentials.access_token_secret)    
