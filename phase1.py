@@ -22,7 +22,7 @@ for row in output:
    if i>20:
       break
    else:
-      print("Tweet Text: ",row[2])
+      print("Named Entities: ",row[5])
       i = i+1
 
 

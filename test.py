@@ -16,6 +16,7 @@ import preprocessor as p
 class MyStreamListener(tweepy.StreamListener):
 
     nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
+    nlp1 = spacy.load('en_core_web_sm')
 
     def lemma(self,comment):
         doc = MyStreamListener.nlp(comment)
@@ -56,6 +57,13 @@ class MyStreamListener(tweepy.StreamListener):
         sentiment = TextBlob(text).sentiment
         polarity = sentiment.polarity
         subjectivity = sentiment.subjectivity
+        doc = MyStreamListener.nlp1(text)
+        enti = str()
+        cond = ['PERSON', 'GPE', 'ORG']
+        for ent in doc.ents: 
+            if ent.label_ in cond:
+                enti = enti + "," + ent.text                 
+        enti = enti[1:]
         user_created_at = status.user.created_at
         user_location = self.deEmojify(status.user.location)
         user_description = self.deEmojify(status.user.description)
@@ -77,8 +85,8 @@ class MyStreamListener(tweepy.StreamListener):
 
         if self.check_conn(myconn) == True:        
             mycursor = myconn.cursor()
-            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
-            val = (id_str, created_at, text, polarity, subjectivity, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
+            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
+            val = (id_str, created_at, text, polarity, subjectivity, enti, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
             mycursor.execute(sql, val)
             myconn.commit()
             print("Inserted")
