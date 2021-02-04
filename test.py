@@ -22,6 +22,37 @@ class MyStreamListener(tweepy.StreamListener):
         doc = MyStreamListener.nlp(comment)
         return " ".join([token.lemma_ for token in doc])    
 
+    def decontracted(self, phrase):
+        # specific
+        phrase = re.sub(r"won\'t", "will not", phrase)
+        phrase = re.sub(r"can\'t", "can not", phrase)
+        
+        phrase = re.sub(r"won\’t", "will not", phrase)
+        phrase = re.sub(r"can\’t", "can not", phrase)
+
+        # general
+        phrase = re.sub(r"n\'t", " not", phrase)
+        phrase = re.sub(r"\'re", " are", phrase)
+        phrase = re.sub(r"\'s", " is", phrase)
+        phrase = re.sub(r"\'d", " would", phrase)
+        phrase = re.sub(r"\'ll", " will", phrase)
+        phrase = re.sub(r"\'t", " not", phrase)
+        phrase = re.sub(r"\'ve", " have", phrase)
+        phrase = re.sub(r"\'m", " am", phrase)
+
+        phrase = re.sub(r"n\’t", " not", phrase)
+        phrase = re.sub(r"\’re", " are", phrase)
+        phrase = re.sub(r"\’s", " is", phrase)
+        phrase = re.sub(r"\’d", " would", phrase)
+        phrase = re.sub(r"\’ll", " will", phrase)
+        phrase = re.sub(r"\’t", " not", phrase)
+        phrase = re.sub(r"\’ve", " have", phrase)
+        phrase = re.sub(r"\’m", " am", phrase)    
+
+        return phrase
+
+
+
     def deEmojify(self, text):
         try:             
             regrex_pattern = re.compile(pattern = "["
@@ -36,12 +67,17 @@ class MyStreamListener(tweepy.StreamListener):
 
     def preprocess(self, tweet):    
         try:
-            text = re.sub(r'http\S+', '', tweet.lower(), flags=re.MULTILINE)
-            res = re.sub(r'[^\w\s]', '', text)
-            deemo = self.deEmojify(res)
-            le = self.lemma(deemo)
-            return le
-        except TypeError: 
+            text3 = self.decontracted(tweet).replace('&amp;', 'and')        
+            text2 = p.clean(text3)
+            text1 = self.lemma(text2)
+            text = re.sub(r'[^\w\s]', '', text1)    
+
+            # text = re.sub(r'http\S+', '', tweet.lower(), flags=re.MULTILINE)
+            # res = re.sub(r'[^\w\s]', '', text)
+            # deemo = self.deEmojify(res)
+            # le = self.lemma(deemo)
+            return text
+        except TypeError:
             pass
     
     def on_status(self, status):
@@ -51,9 +87,7 @@ class MyStreamListener(tweepy.StreamListener):
         # Extract info from tweets
         id_str = status.id_str
         created_at = status.created_at
-        # text = self.preprocess(status.text)    # Pre-processing the text  
-        text1 = p.clean(status.text)
-        text = re.sub(r'[^\w\s]', '', text1)
+        text = self.preprocess(status.text)    # Pre-processing the text          
         sentiment = TextBlob(text).sentiment
         polarity = sentiment.polarity
         subjectivity = sentiment.subjectivity
