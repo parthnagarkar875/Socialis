@@ -1,9 +1,9 @@
-# import sqlite3
+import sqlite3
 
-# conn1 = sqlite3.connect('twitter.db')
-# print("Opened the database successfully")
+conn1 = sqlite3.connect('twitter.db')
+print("Opened the database successfully")
 
-# conn = conn1.cursor()
+conn = conn1.cursor()
 
 
 # # conn.execute('''CREATE TABLE SAMPLE
@@ -15,15 +15,15 @@
 # #       VALUES (2, 'Parth')")
 
 # # # conn1.commit()
-# output=conn.execute("SELECT * FROM FACEBOOK")
+output=conn.execute("SELECT * FROM FACEBOOK")
 
-# i = 0
-# for row in output:
-#    if i>20:
-#       break
-#    else:
-#       print("Named Entities: ",row[5])
-#       i = i+1
+i = 0
+for row in output:
+   if i>70:
+      break
+   else:
+      print("Named Entities: ",row[5])
+      i = i+1
 
 
 # conn.execute("DROP TABLE FACEBOOK")
@@ -37,8 +37,8 @@
 # #     print("Name:", row[1])
     
 
-# conn1.commit()
-# conn1.close()
+conn1.commit()
+conn1.close()
 
 # import the module 
 # import tweepy 
