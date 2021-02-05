@@ -51,8 +51,6 @@ class MyStreamListener(tweepy.StreamListener):
 
         return phrase
 
-
-
     def deEmojify(self, text):
         try:             
             regrex_pattern = re.compile(pattern = "["
