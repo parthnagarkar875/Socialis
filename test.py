@@ -83,9 +83,34 @@ class MyStreamListener(tweepy.StreamListener):
         #Avoid retweeted info, and only original tweets will be received
             return True
         # Extract info from tweets
+        final_text=str()
+        try:
+            if hasattr(status, 'retweeted_status') and hasattr(status.retweeted_status, 'extended_tweet'):
+                final_text=status.retweeted_status.extended_tweet['full_text']
+                # print("Extended Tweet:", status.retweeted_status.extended_tweet['full_text'])
+            elif hasattr(status, 'extended_tweet'):
+                final_text=status.extended_tweet['full_text']
+                # print("Extended Tweet:", status.extended_tweet['full_text'])                
+            else:
+                final_text=status.text
+                # print("Printing Full text", status.text)
+        except AttributeError as e:
+            # print("Error", e)
+            pass
+            # final_text=status.text
+            # print(final_text)
+        
         id_str = status.id_str
         created_at = status.created_at
-        text = self.preprocess(status.text)    # Pre-processing the text          
+        if final_text == 'RT':
+            result = final_text.index(':')
+            final_text=final_text[(result+1):]
+        users=re.findall("@([a-zA-Z0-9_]+)", final_text) 
+        user_list=str()
+        for i in users:
+            user_list = user_list + "," + i
+        user_list=user_list[1:]            
+        text = self.preprocess(final_text)    # Pre-processing the text          
         sentiment = TextBlob(text).sentiment
         polarity = sentiment.polarity
         subjectivity = sentiment.subjectivity
@@ -109,7 +134,9 @@ class MyStreamListener(tweepy.StreamListener):
         retweet_count = status.retweet_count
         favorite_count = status.favorite_count
         
-        print(status.text)
+        # print(status.text)
+        print(final_text)
+        
         print(text)
         print("Long: {}, Lati: {}".format(longitude, latitude))
 
@@ -117,8 +144,8 @@ class MyStreamListener(tweepy.StreamListener):
 
         if self.check_conn(myconn) == True:        
             mycursor = myconn.cursor()
-            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
-            val = (id_str, created_at, text, polarity, subjectivity, enti, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
+            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, users_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
+            val = (id_str, created_at, text, polarity, subjectivity, enti, user_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
             mycursor.execute(sql, val)
             myconn.commit()
             print("Inserted")
@@ -146,7 +173,7 @@ auth.set_access_token(credentials.access_token, credentials.access_token_secret)
 api = tweepy.API(auth,wait_on_rate_limit=True)
 
 myStreamListener = MyStreamListener()
-myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener)
+myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener, tweet_mode='extended')
 
 myconn =sqlite3.connect('twitter.db')
 
