@@ -19,10 +19,10 @@ output=conn.execute("SELECT * FROM FACEBOOK")
 
 i = 0
 for row in output:
-   if i>70:
+   if i>20000:
       break
    else:
-      print("Named Entities: ",row[5])
+      print("Named Entitites: ",row[5])
       i = i+1
 
 
@@ -44,24 +44,35 @@ conn1.close()
 # import tweepy 
 # import credentials
 
-# assign the values accordingly 
+# # assign the values accordingly 
 
-# authorization of consumer key and consumer secret 
+# # authorization of consumer key and consumer secret 
 # auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret) 
 
-# set access to user's access key and access secret 
+# # set access to user's access key and access secret 
 # auth.set_access_token(credentials.access_token, credentials.access_token_secret) 
 
-# calling the api 
+# # calling the api 
 # api = tweepy.API(auth) 
 
-# the ID of the status 
-# id = 1357352065522044929
+# # the ID of the status 
+# id = 1358086426592751616
 
-# fetching the status 
-# status = api.get_status(id) 
+# # fetching the status 
+# status = api.get_status(id, tweet_mode='extended') 
 
-# printing the information 
+# # printing the information
+
+# try:
+#    if hasattr(status, 'retweeted_status') and hasattr(status.retweeted_status, 'extended_tweet'):
+#          print("Extended tweet:", status.retweeted_status.extended_tweet['full_text'])
+#    if hasattr(status, 'extended_tweet'):
+#          print("Extended tweet:", status.extended_tweet['full_text'])
+#    else:
+#          print("Normal tweet", status.full_text)
+# except AttributeError as e:
+#    print("Error", AttributeError)
+
 # print("The status was created at : " + str(status.created_at)) 
 # print("The id is : " + str(status.id)) 
 # print("The id_str is : " + status.id_str) 

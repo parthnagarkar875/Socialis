@@ -7,11 +7,14 @@ import pandas as pd
 from textblob import TextBlob
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.tag import StanfordNERTagger
+from nltk.tokenize import word_tokenize
 import spacy
 import sqlite3
 from sqlite3 import OperationalError
 import numpy
 import preprocessor as p
+import os
 
 class MyStreamListener(tweepy.StreamListener):
 
@@ -63,12 +66,25 @@ class MyStreamListener(tweepy.StreamListener):
         except TypeError: 
             pass
 
+    def ner_tagging(self, text):
+        os.environ['JAVAHOME'] = settings.java_path
+        st = StanfordNERTagger(settings.model_path, settings.ner_java_path, encoding='utf-8')
+        tokenized_text = word_tokenize(text)            # ['This', 'is', 'the', 'game']
+        classified_text = st.tag(tokenized_text)
+        cond = ['PERSON', 'LOCATION', 'ORGANIZATION']
+        enti=str()
+        for ent in classified_text: 
+            if ent[1] in cond:                  # Only choose person, location or organization
+                enti = enti + "," + ent[0]                
+
+        return enti
+
     def preprocess(self, tweet):    
         try:
-            text3 = self.decontracted(tweet).replace('&amp;', 'and')        
-            text2 = p.clean(text3)
-            text1 = self.lemma(text2)
-            text = re.sub(r'[^\w\s]', '', text1)    
+            text3 = self.decontracted(tweet).replace('&amp;', 'and')        # Decontract i.e convert can't to cannot and Replacing "&amp;" with "and"
+            text2 = p.clean(text3)                              # Remove URLs, Emojis, etc.
+            text1 = self.lemma(text2)                           # Lemmatization
+            text = re.sub(r'[^\w\s]', '', text1)                # Remove punctuation
 
             # text = re.sub(r'http\S+', '', tweet.lower(), flags=re.MULTILINE)
             # res = re.sub(r'[^\w\s]', '', text)
@@ -83,18 +99,53 @@ class MyStreamListener(tweepy.StreamListener):
         #Avoid retweeted info, and only original tweets will be received
             return True
         # Extract info from tweets
+        final_text=str()
+
+        # Get full text from a tweet
+        try:
+            if hasattr(status, 'retweeted_status') and hasattr(status.retweeted_status, 'extended_tweet'):
+                final_text=status.retweeted_status.extended_tweet['full_text']
+                # print("Extended Tweet:", status.retweeted_status.extended_tweet['full_text'])
+            elif hasattr(status, 'extended_tweet'):
+                final_text=status.extended_tweet['full_text']
+                # print("Extended Tweet:", status.extended_tweet['full_text'])                
+            else:
+                final_text=status.text
+                # print("Printing Full text", status.text)
+        except AttributeError as e:
+            # print("Error", e)
+            pass
+            # final_text=status.text
+            # print(final_text)
+        
         id_str = status.id_str
         created_at = status.created_at
-        text = self.preprocess(status.text)    # Pre-processing the text          
+        
+        # Removing "RT @username:" from the text
+        if final_text == 'RT':
+            result = final_text.index(':')
+            final_text=final_text[(result+1):]
+        
+        # Getting list of users
+        users=re.findall("@([a-zA-Z0-9_]+)", final_text) 
+        user_list=str()
+        for i in users:
+            user_list = user_list + "," + i
+        user_list=user_list[1:]            
+        text = self.preprocess(final_text)    # Pre-processing the text          
         sentiment = TextBlob(text).sentiment
         polarity = sentiment.polarity
         subjectivity = sentiment.subjectivity
-        doc = MyStreamListener.nlp1(text)
-        enti = str()
-        cond = ['PERSON', 'GPE', 'ORG']
-        for ent in doc.ents: 
-            if ent.label_ in cond:
-                enti = enti + "," + ent.text                 
+        
+        
+        # doc = MyStreamListener.nlp1(text)
+        # cond = ['PERSON', 'GPE', 'ORG']
+        # for ent in doc.ents: 
+        #     if ent.label_ in cond:
+        #         enti = enti + "," + ent.text                 
+
+        enti=self.ner_tagging(text)
+
         enti = enti[1:]
         user_created_at = status.user.created_at
         user_location = self.deEmojify(status.user.location)
@@ -109,7 +160,9 @@ class MyStreamListener(tweepy.StreamListener):
         retweet_count = status.retweet_count
         favorite_count = status.favorite_count
         
-        print(status.text)
+        # print(status.text)
+        print(final_text)
+        
         print(text)
         print("Long: {}, Lati: {}".format(longitude, latitude))
 
@@ -117,8 +170,8 @@ class MyStreamListener(tweepy.StreamListener):
 
         if self.check_conn(myconn) == True:        
             mycursor = myconn.cursor()
-            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
-            val = (id_str, created_at, text, polarity, subjectivity, enti, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
+            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, users_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
+            val = (id_str, created_at, text, polarity, subjectivity, enti, user_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
             mycursor.execute(sql, val)
             myconn.commit()
             print("Inserted")
@@ -146,7 +199,7 @@ auth.set_access_token(credentials.access_token, credentials.access_token_secret)
 api = tweepy.API(auth,wait_on_rate_limit=True)
 
 myStreamListener = MyStreamListener()
-myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener)
+myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener, tweet_mode='extended')
 
 myconn =sqlite3.connect('twitter.db')
 
@@ -161,8 +214,10 @@ if myStreamListener.check_conn(myconn) == True:
 
     myconn.close()
 
-
-myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
+try:
+    myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
+except Exception as e:
+    pass
 # Close the MySQL connection as it finished
 # However, this won't be reached as the stream listener won't stop automatically
 # Press STOP button to finish the process.
