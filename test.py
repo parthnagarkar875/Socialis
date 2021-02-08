@@ -7,11 +7,14 @@ import pandas as pd
 from textblob import TextBlob
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.tag import StanfordNERTagger
+from nltk.tokenize import word_tokenize
 import spacy
 import sqlite3
 from sqlite3 import OperationalError
 import numpy
 import preprocessor as p
+import os
 
 class MyStreamListener(tweepy.StreamListener):
 
@@ -63,12 +66,25 @@ class MyStreamListener(tweepy.StreamListener):
         except TypeError: 
             pass
 
+    def ner_tagging(self, text):
+        os.environ['JAVAHOME'] = settings.java_path
+        st = StanfordNERTagger(settings.model_path, settings.ner_java_path, encoding='utf-8')
+        tokenized_text = word_tokenize(text)            # ['This', 'is', 'the', 'game']
+        classified_text = st.tag(tokenized_text)
+        cond = ['PERSON', 'LOCATION', 'ORGANIZATION']
+        enti=str()
+        for ent in classified_text: 
+            if ent[1] in cond:                  # Only choose person, location or organization
+                enti = enti + "," + ent[0]                
+
+        return enti
+
     def preprocess(self, tweet):    
         try:
-            text3 = self.decontracted(tweet).replace('&amp;', 'and')        
-            text2 = p.clean(text3)
-            text1 = self.lemma(text2)
-            text = re.sub(r'[^\w\s]', '', text1)    
+            text3 = self.decontracted(tweet).replace('&amp;', 'and')        # Decontract i.e convert can't to cannot and Replacing "&amp;" with "and"
+            text2 = p.clean(text3)                              # Remove URLs, Emojis, etc.
+            text1 = self.lemma(text2)                           # Lemmatization
+            text = re.sub(r'[^\w\s]', '', text1)                # Remove punctuation
 
             # text = re.sub(r'http\S+', '', tweet.lower(), flags=re.MULTILINE)
             # res = re.sub(r'[^\w\s]', '', text)
@@ -84,6 +100,8 @@ class MyStreamListener(tweepy.StreamListener):
             return True
         # Extract info from tweets
         final_text=str()
+
+        # Get full text from a tweet
         try:
             if hasattr(status, 'retweeted_status') and hasattr(status.retweeted_status, 'extended_tweet'):
                 final_text=status.retweeted_status.extended_tweet['full_text']
@@ -102,9 +120,13 @@ class MyStreamListener(tweepy.StreamListener):
         
         id_str = status.id_str
         created_at = status.created_at
+        
+        # Removing "RT @username:" from the text
         if final_text == 'RT':
             result = final_text.index(':')
             final_text=final_text[(result+1):]
+        
+        # Getting list of users
         users=re.findall("@([a-zA-Z0-9_]+)", final_text) 
         user_list=str()
         for i in users:
@@ -114,12 +136,16 @@ class MyStreamListener(tweepy.StreamListener):
         sentiment = TextBlob(text).sentiment
         polarity = sentiment.polarity
         subjectivity = sentiment.subjectivity
-        doc = MyStreamListener.nlp1(text)
-        enti = str()
-        cond = ['PERSON', 'GPE', 'ORG']
-        for ent in doc.ents: 
-            if ent.label_ in cond:
-                enti = enti + "," + ent.text                 
+        
+        
+        # doc = MyStreamListener.nlp1(text)
+        # cond = ['PERSON', 'GPE', 'ORG']
+        # for ent in doc.ents: 
+        #     if ent.label_ in cond:
+        #         enti = enti + "," + ent.text                 
+
+        enti=self.ner_tagging(text)
+
         enti = enti[1:]
         user_created_at = status.user.created_at
         user_location = self.deEmojify(status.user.location)
@@ -188,8 +214,10 @@ if myStreamListener.check_conn(myconn) == True:
 
     myconn.close()
 
-
-myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
+try:
+    myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
+except Exception as e:
+    pass
 # Close the MySQL connection as it finished
 # However, this won't be reached as the stream listener won't stop automatically
 # Press STOP button to finish the process.

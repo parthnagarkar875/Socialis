@@ -1,9 +1,9 @@
-# import sqlite3
+import sqlite3
 
-# conn1 = sqlite3.connect('twitter.db')
-# print("Opened the database successfully")
+conn1 = sqlite3.connect('twitter.db')
+print("Opened the database successfully")
 
-# conn = conn1.cursor()
+conn = conn1.cursor()
 
 
 # # conn.execute('''CREATE TABLE SAMPLE
@@ -15,15 +15,15 @@
 # #       VALUES (2, 'Parth')")
 
 # # # conn1.commit()
-# output=conn.execute("SELECT * FROM FACEBOOK")
+output=conn.execute("SELECT * FROM FACEBOOK")
 
-# i = 0
-# for row in output:
-#    if i>150:
-#       break
-#    else:
-#       print("Usernames: ",row[6])
-#       i = i+1
+i = 0
+for row in output:
+   if i>20000:
+      break
+   else:
+      print("Named Entitites: ",row[5])
+      i = i+1
 
 
 # conn.execute("DROP TABLE FACEBOOK")
@@ -37,41 +37,41 @@
 # #     print("Name:", row[1])
     
 
-# conn1.commit()
-# conn1.close()
+conn1.commit()
+conn1.close()
 
 # import the module 
-import tweepy 
-import credentials
+# import tweepy 
+# import credentials
 
-# assign the values accordingly 
+# # assign the values accordingly 
 
-# authorization of consumer key and consumer secret 
-auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret) 
+# # authorization of consumer key and consumer secret 
+# auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret) 
 
-# set access to user's access key and access secret 
-auth.set_access_token(credentials.access_token, credentials.access_token_secret) 
+# # set access to user's access key and access secret 
+# auth.set_access_token(credentials.access_token, credentials.access_token_secret) 
 
-# calling the api 
-api = tweepy.API(auth) 
+# # calling the api 
+# api = tweepy.API(auth) 
 
-# the ID of the status 
-id = 1358086426592751616
+# # the ID of the status 
+# id = 1358086426592751616
 
-# fetching the status 
-status = api.get_status(id, tweet_mode='extended') 
+# # fetching the status 
+# status = api.get_status(id, tweet_mode='extended') 
 
-# printing the information
+# # printing the information
 
-try:
-   if hasattr(status, 'retweeted_status') and hasattr(status.retweeted_status, 'extended_tweet'):
-         print("Extended tweet:", status.retweeted_status.extended_tweet['full_text'])
-   if hasattr(status, 'extended_tweet'):
-         print("Extended tweet:", status.extended_tweet['full_text'])
-   else:
-         print("Normal tweet", status.full_text)
-except AttributeError as e:
-   print("Error", AttributeError)
+# try:
+#    if hasattr(status, 'retweeted_status') and hasattr(status.retweeted_status, 'extended_tweet'):
+#          print("Extended tweet:", status.retweeted_status.extended_tweet['full_text'])
+#    if hasattr(status, 'extended_tweet'):
+#          print("Extended tweet:", status.extended_tweet['full_text'])
+#    else:
+#          print("Normal tweet", status.full_text)
+# except AttributeError as e:
+#    print("Error", AttributeError)
 
 # print("The status was created at : " + str(status.created_at)) 
 # print("The id is : " + str(status.id)) 
