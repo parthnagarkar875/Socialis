@@ -22,7 +22,7 @@ for row in output:
    if i>20000:
       break
    else:
-      print("Named Entitites: ",row[5])
+      print("Latitude: ",row[12])
       i = i+1
 
 
