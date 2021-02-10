@@ -15,6 +15,7 @@ from sqlite3 import OperationalError
 import numpy
 import preprocessor as p
 import os
+from geopy.geocoders import Nominatim
 
 class MyStreamListener(tweepy.StreamListener):
 
@@ -137,18 +138,27 @@ class MyStreamListener(tweepy.StreamListener):
         polarity = sentiment.polarity
         subjectivity = sentiment.subjectivity
         
-        
-        # doc = MyStreamListener.nlp1(text)
-        # cond = ['PERSON', 'GPE', 'ORG']
-        # for ent in doc.ents: 
-        #     if ent.label_ in cond:
-        #         enti = enti + "," + ent.text                 
+        enti=str()
+        doc = MyStreamListener.nlp1(text)
+        cond = ['PERSON', 'GPE', 'ORG']
+        for ent in doc.ents: 
+            if ent.label_ in cond:
+                enti = enti + "," + ent.text                 
 
-        enti=self.ner_tagging(text)
+        # enti=self.ner_tagging(text)
 
         enti = enti[1:]
         user_created_at = status.user.created_at
-        user_location = self.deEmojify(status.user.location)
+        temp_location = self.deEmojify(status.user.location)        
+        geolocator = Nominatim(user_agent="myGeocoder")         # Initializing geolocator object for getting address
+        try:
+            location = geolocator.geocode(temp_location)
+            # print(location.raw['address']['country'])                
+            location_list = location.raw['display_name'].split(",")
+            user_location=location_list[len(location_list)-1]               # Extracting only country name
+        except Exception as e:
+            user_location = None
+
         user_description = self.deEmojify(status.user.description)
         user_followers_count =status.user.followers_count
         longitude = None
