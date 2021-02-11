@@ -2,7 +2,7 @@ import credentials # Import api/access_token keys from credentials.py
 import re
 import tweepy
 import settings
-import mysql.connector
+# import mysql.connector
 import pandas as pd
 from textblob import TextBlob
 from nltk.corpus import stopwords
@@ -10,7 +10,10 @@ from nltk.tokenize import word_tokenize
 from nltk.tag import StanfordNERTagger
 from nltk.tokenize import word_tokenize
 import spacy
+import nltk
 import sqlite3
+import numpy
+from google_trans_new import google_translator 
 from sqlite3 import OperationalError
 import numpy
 import preprocessor as p
@@ -101,15 +104,17 @@ class MyStreamListener(tweepy.StreamListener):
             return text
         except TypeError:
             pass
-    
+
     def get_location(self, temp_location):
         geolocator = Nominatim(user_agent="myGeocoder")         # Initializing geolocator object for getting address
-
+        words = set(nltk.corpus.words.words())
         try:
             location = geolocator.geocode(temp_location)
             # print(location.raw['address']['country'])                
             location_list = location.raw['display_name'].split(",")
-            user_location=location_list[len(location_list)-1]               # Extracting only country name
+            user_location1=location_list[len(location_list)-1].strip()               # Extracting only country name
+            translator = google_translator()  
+            user_location = translator.translate(user_location1, lang_tgt='en')         #Translate the location to english
         except Exception as e:
             user_location = None
 

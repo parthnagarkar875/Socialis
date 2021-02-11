@@ -17,6 +17,7 @@ conn = conn1.cursor()
 # # # conn1.commit()
 output=conn.execute("SELECT * FROM FACEBOOK")
 
+
 i = 0
 for row in output:
    if i>20000:
