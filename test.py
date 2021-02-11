@@ -67,17 +67,24 @@ class MyStreamListener(tweepy.StreamListener):
         except TypeError: 
             pass
 
-    def ner_tagging(self, text):
-        os.environ['JAVAHOME'] = settings.java_path
-        st = StanfordNERTagger(settings.model_path, settings.ner_java_path, encoding='utf-8')
-        tokenized_text = word_tokenize(text)            # ['This', 'is', 'the', 'game']
-        classified_text = st.tag(tokenized_text)
-        cond = ['PERSON', 'LOCATION', 'ORGANIZATION']
+    def ner_tagging(self, text, n):
         enti=str()
-        for ent in classified_text: 
-            if ent[1] in cond:                  # Only choose person, location or organization
-                enti = enti + "," + ent[0]                
-
+        if n==1:
+            os.environ['JAVAHOME'] = settings.java_path
+            st = StanfordNERTagger(settings.model_path, settings.ner_java_path, encoding='utf-8')
+            tokenized_text = word_tokenize(text)            # ['This', 'is', 'the', 'game']
+            classified_text = st.tag(tokenized_text)
+            cond = ['PERSON', 'LOCATION', 'ORGANIZATION']
+            for ent in classified_text: 
+                if ent[1] in cond:                  # Only choose person, location or organization
+                    enti = enti + "," + ent[0]                
+        if n==2:
+            doc = MyStreamListener.nlp1(text)
+            cond = ['PERSON', 'GPE', 'ORG']
+            for ent in doc.ents: 
+                if ent.label_ in cond:
+                    enti = enti + "," + ent.text                 
+        enti = enti[1:]       
         return enti
 
     def preprocess(self, tweet):    
@@ -95,11 +102,20 @@ class MyStreamListener(tweepy.StreamListener):
         except TypeError:
             pass
     
-    def on_status(self, status):
-        if status.retweeted:
-        #Avoid retweeted info, and only original tweets will be received
-            return True
-        # Extract info from tweets
+    def get_location(self, temp_location):
+        geolocator = Nominatim(user_agent="myGeocoder")         # Initializing geolocator object for getting address
+
+        try:
+            location = geolocator.geocode(temp_location)
+            # print(location.raw['address']['country'])                
+            location_list = location.raw['display_name'].split(",")
+            user_location=location_list[len(location_list)-1]               # Extracting only country name
+        except Exception as e:
+            user_location = None
+
+        return user_location
+
+    def get_full_text(self, status):
         final_text=str()
 
         # Get full text from a tweet
@@ -114,11 +130,27 @@ class MyStreamListener(tweepy.StreamListener):
                 final_text=status.text
                 # print("Printing Full text", status.text)
         except AttributeError as e:
-            # print("Error", e)
             pass
-            # final_text=status.text
-            # print(final_text)
         
+        return final_text
+
+    def get_user_list(self, final_text):
+        # Getting list of users
+        users=re.findall("@([a-zA-Z0-9_]+)", final_text) 
+        user_list=str()
+        for i in users:
+            user_list = user_list + "," + i
+        user_list=user_list[1:]            
+        return user_list
+
+
+    def on_status(self, status):
+        if status.retweeted:
+        #Avoid retweeted info, and only original tweets will be received
+            return True
+        # Extract info from tweets
+
+        final_text=self.get_full_text(status)    
         id_str = status.id_str
         created_at = status.created_at
         
@@ -128,37 +160,15 @@ class MyStreamListener(tweepy.StreamListener):
             final_text=final_text[(result+1):]
         
         # Getting list of users
-        users=re.findall("@([a-zA-Z0-9_]+)", final_text) 
-        user_list=str()
-        for i in users:
-            user_list = user_list + "," + i
-        user_list=user_list[1:]            
+        user_list=self.get_user_list(final_text)            
         text = self.preprocess(final_text)    # Pre-processing the text          
         sentiment = TextBlob(text).sentiment
         polarity = sentiment.polarity
         subjectivity = sentiment.subjectivity
-        
-        enti=str()
-        doc = MyStreamListener.nlp1(text)
-        cond = ['PERSON', 'GPE', 'ORG']
-        for ent in doc.ents: 
-            if ent.label_ in cond:
-                enti = enti + "," + ent.text                 
-
-        # enti=self.ner_tagging(text)
-
-        enti = enti[1:]
+        enti=self.ner_tagging(text, 2)      # Named entity recognition
         user_created_at = status.user.created_at
         temp_location = self.deEmojify(status.user.location)        
-        geolocator = Nominatim(user_agent="myGeocoder")         # Initializing geolocator object for getting address
-        try:
-            location = geolocator.geocode(temp_location)
-            # print(location.raw['address']['country'])                
-            location_list = location.raw['display_name'].split(",")
-            user_location=location_list[len(location_list)-1]               # Extracting only country name
-        except Exception as e:
-            user_location = None
-
+        user_location=self.get_location(temp_location)        
         user_description = self.deEmojify(status.user.description)
         user_followers_count =status.user.followers_count
         longitude = None
