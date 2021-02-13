@@ -8,7 +8,6 @@ from textblob import TextBlob
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.tag import StanfordNERTagger
-from nltk.tokenize import word_tokenize
 import spacy
 import nltk
 import sqlite3
@@ -19,6 +18,7 @@ import numpy
 import preprocessor as p
 import os
 from geopy.geocoders import Nominatim
+from time import sleep
 
 class MyStreamListener(tweepy.StreamListener):
 
@@ -107,7 +107,6 @@ class MyStreamListener(tweepy.StreamListener):
 
     def get_location(self, temp_location):
         geolocator = Nominatim(user_agent="myGeocoder")         # Initializing geolocator object for getting address
-        words = set(nltk.corpus.words.words())
         try:
             location = geolocator.geocode(temp_location)
             # print(location.raw['address']['country'])                
@@ -216,7 +215,7 @@ class MyStreamListener(tweepy.StreamListener):
         '''
         if status_code == 420:
             # return False to disconnect the stream
-            return False
+            return True
 
 
 auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
