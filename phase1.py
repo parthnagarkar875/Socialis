@@ -6,10 +6,10 @@ print("Opened the database successfully")
 conn = conn1.cursor()
 
 
-# # conn.execute('''CREATE TABLE SAMPLE
-# #             (ID INT PRIMARY KEY NOT NULL,
-# #              NAME TEXT NOT NULL
-# #             );''')
+# conn.execute('''CREATE TABLE SAMPLE
+#             (ID INT PRIMARY KEY NOT NULL,
+#              NAME TEXT NOT NULL
+#             );''')
 
 # # conn.execute("INSERT INTO SAMPLE (ID,NAME) \
 # #       VALUES (2, 'Parth')")
@@ -24,6 +24,7 @@ for row in output:
       break
    else:
       print("Location: ",row[8])
+
       i = i+1
 
 
