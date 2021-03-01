@@ -168,6 +168,12 @@ class MyStreamListener(tweepy.StreamListener):
         text = self.preprocess(final_text)    # Pre-processing the text          
         sentiment = TextBlob(text).sentiment
         polarity = sentiment.polarity
+        if polarity > 0.5:
+            polarity=1
+        elif polarity < -0.5:
+            polarity=-1
+        else:
+            polarity = 0
         subjectivity = sentiment.subjectivity
         enti=self.ner_tagging(text, 2)      # Named entity recognition
         user_created_at = status.user.created_at
@@ -241,7 +247,9 @@ if myStreamListener.check_conn(myconn) == True:
 try:
     myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
 except Exception as e:
-    pass
+    print("Error. Restarting Stream.... Error: ")
+    print(e.__doc__)
+    print(e.message)
 # Close the MySQL connection as it finished
 # However, this won't be reached as the stream listener won't stop automatically
 # Press STOP button to finish the process.

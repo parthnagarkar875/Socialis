@@ -28,16 +28,17 @@ conn = conn1.cursor()
 #       i = i+1
 
 dataframe = pd.read_sql("""
-            SELECT user_location FROM FACEBOOK     
+            SELECT text FROM FACEBOOK where polarity=-1 
             """, con=conn1)
 # return your first five rows
-print(dataframe.head())
+print(dataframe['text'])
 
 
 
 
 
-# # conn.execute("DROP TABLE FACEBOOK")
+
+# conn.execute("DROP TABLE FACEBOOK")
 # # # # conn.execute("DELETE from SAMPLE where ID = 1")
 
 # # result=output.fetchall()
@@ -48,8 +49,8 @@ print(dataframe.head())
 # # #     print("Name:", row[1])
     
 
-# conn1.commit()
-# conn1.close()
+conn1.commit()
+conn1.close()
 
 # # import the module 
 # # import tweepy 
