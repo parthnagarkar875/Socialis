@@ -19,11 +19,15 @@ import preprocessor as p
 import os
 from geopy.geocoders import Nominatim
 from time import sleep
-
+from multiprocessing import Process, Queue
+import multiprocessing
 class MyStreamListener(tweepy.StreamListener):
-
     nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
     nlp1 = spacy.load('en_core_web_sm')
+
+    def __init__(self, status_queue):
+        super(MyStreamListener, self).__init__()
+        self.status_queue=status_queue
 
     def lemma(self,comment):
         doc = MyStreamListener.nlp(comment)
@@ -153,8 +157,62 @@ class MyStreamListener(tweepy.StreamListener):
         #Avoid retweeted info, and only original tweets will be received
             return True
         # Extract info from tweets
+        print(status.text)
+        self.status_queue.put(status)
 
-        final_text=self.get_full_text(status)    
+    def check_conn(self, conn):
+        try:
+            conn.cursor()
+            return True
+        except Exception as ex:
+            return False
+
+    def on_error(self, status_code):
+        '''
+        Since Twitter API has rate limits, 
+        stop srcraping data as it exceed to the thresold.
+        '''
+        if status_code == 420:
+            # return False to disconnect the stream
+            return True
+
+def stream():
+    auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
+    auth.set_access_token(credentials.access_token, credentials.access_token_secret)    
+    api = tweepy.API(auth,wait_on_rate_limit=True)
+
+    myStreamListener = MyStreamListener(status_queue)
+    myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener, tweet_mode='extended')
+
+    myconn =sqlite3.connect('twitter.db')
+
+    if myStreamListener.check_conn(myconn) == True:        
+        mycursor = myconn.cursor()
+        try:
+            output=myconn.execute("SELECT COUNT(*) FROM {}".format(settings.TABLE_NAME))
+            result=output.fetchall()
+        except OperationalError:
+            myconn.execute("CREATE TABLE {} ({})".format(settings.TABLE_NAME, settings.TABLE_ATTRIBUTES))
+            myconn.commit()
+
+        myconn.close()
+
+    try:
+        myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
+    except Exception as e:
+        print("Error. Restarting Stream.... Error: ")
+        print(e.__doc__)
+        print(e.message)
+
+    myconn.close()
+
+
+def main_method(status_queue):
+    while True:
+        print("\n\n\n\n\n\n\nStarted\n\n\n\n\n\n\n")
+        a=MyStreamListener(status_queue)
+        status=status_queue.get()
+        final_text=a.get_full_text(status)    
         id_str = status.id_str
         created_at = status.created_at
         
@@ -164,8 +222,9 @@ class MyStreamListener(tweepy.StreamListener):
             final_text=final_text[(result+1):]
         
         # Getting list of users
-        user_list=self.get_user_list(final_text)            
-        text = self.preprocess(final_text)    # Pre-processing the text          
+        user_list=a.get_user_list(final_text)            
+        text = a.preprocess(final_text)    # Pre-processing the text          
+        print("\n\n\n\n\n", text, "\n\n\n\n\n")
         sentiment = TextBlob(text).sentiment
         polarity = sentiment.polarity
         if polarity > 0.5:
@@ -175,11 +234,11 @@ class MyStreamListener(tweepy.StreamListener):
         else:
             polarity = 0
         subjectivity = sentiment.subjectivity
-        enti=self.ner_tagging(text, 2)      # Named entity recognition
+        enti=a.ner_tagging(text, 2)      # Named entity recognition
         user_created_at = status.user.created_at
-        temp_location = self.deEmojify(status.user.location)        
-        user_location=self.get_location(temp_location)        
-        user_description = self.deEmojify(status.user.description)
+        temp_location = a.deEmojify(status.user.location)        
+        user_location=a.get_location(temp_location)        
+        user_description = a.deEmojify(status.user.description)
         user_followers_count =status.user.followers_count
         longitude = None
         latitude = None
@@ -198,7 +257,7 @@ class MyStreamListener(tweepy.StreamListener):
 
         myconn =sqlite3.connect('twitter.db')
 
-        if self.check_conn(myconn) == True:        
+        if a.check_conn(myconn) == True:        
             mycursor = myconn.cursor()
             sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, users_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
             val = (id_str, created_at, text, polarity, subjectivity, enti, user_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
@@ -207,50 +266,25 @@ class MyStreamListener(tweepy.StreamListener):
             print("Inserted")
             mycursor.close()
 
-    def check_conn(self, conn):
-        try:
-            conn.cursor()
-            return True
-        except Exception as ex:
-            return False
-
-    def on_error(self, status_code):
-        '''
-        Since Twitter API has rate limits, 
-        stop srcraping data as it exceed to the thresold.
-        '''
-        if status_code == 420:
-            # return False to disconnect the stream
-            return True
+status_queue=Queue()    
 
 
-auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
-auth.set_access_token(credentials.access_token, credentials.access_token_secret)    
-api = tweepy.API(auth,wait_on_rate_limit=True)
+if __name__=="__main__":
+    # p1 = multiprocessing.Process(target=stream) 
+    p2 = multiprocessing.Process(target=main_method, args=(status_queue,))
 
-myStreamListener = MyStreamListener()
-myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener, tweet_mode='extended')
+    p2.daemon=True
 
-myconn =sqlite3.connect('twitter.db')
+    # p1.start() 
+    p2.start() 
+    stream()
+    # p1.join() 
+    p2.join() 
 
-if myStreamListener.check_conn(myconn) == True:        
-    mycursor = myconn.cursor()
-    try:
-        output=myconn.execute("SELECT COUNT(*) FROM {}".format(settings.TABLE_NAME))
-        result=output.fetchall()
-    except OperationalError:
-        myconn.execute("CREATE TABLE {} ({})".format(settings.TABLE_NAME, settings.TABLE_ATTRIBUTES))
-        myconn.commit()
+    print("Done!") 
 
-    myconn.close()
 
-try:
-    myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
-except Exception as e:
-    print("Error. Restarting Stream.... Error: ")
-    print(e.__doc__)
-    print(e.message)
+
 # Close the MySQL connection as it finished
 # However, this won't be reached as the stream listener won't stop automatically
-# Press STOP button to finish the process.
-myconn.close()
+# Press STOP button to finish the process
