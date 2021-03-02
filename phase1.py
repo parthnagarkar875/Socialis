@@ -15,28 +15,27 @@ conn = conn1.cursor()
 # # #       VALUES (2, 'Parth')")
 
 # # # # conn1.commit()
-# output=conn.execute("SELECT * FROM FACEBOOK")
+output=conn.execute("SELECT * FROM FACEBOOK")
 
 
-# i = 0
-# for row in output:
-#    if i>20000:
-#       break
-#    else:
-#       print("Location: ",row[8])
+i = 0
+for row in output:
+   if i>20000:
+      break
+   else:
+      print("ID: ",row[0])
 
-#       i = i+1
-
-dataframe = pd.read_sql("""
-            SELECT text FROM FACEBOOK where polarity=-1 
-            """, con=conn1)
-# return your first five rows
-print(dataframe['text'])
+      i = i+1
 
 
 
+# dataframe = pd.read_sql("""SELECT text FROM FACEBOOK where polarity=1""", con=conn1)
+# # return your first five rows
+# for i in dataframe['text']:
+#     print(i)
 
 
+# print(len(dataframe['id_str'].unique()))
 
 # conn.execute("DROP TABLE FACEBOOK")
 # # # # conn.execute("DELETE from SAMPLE where ID = 1")
