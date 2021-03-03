@@ -1,10 +1,10 @@
 import sqlite3
 import pandas as pd
+
 conn1 = sqlite3.connect('twitter.db')
 print("Opened the database successfully")
 
 conn = conn1.cursor()
-
 
 # # conn.execute('''CREATE TABLE SAMPLE
 # #             (ID INT PRIMARY KEY NOT NULL,
@@ -15,27 +15,27 @@ conn = conn1.cursor()
 # # #       VALUES (2, 'Parth')")
 
 # # # # conn1.commit()
-output=conn.execute("SELECT * FROM FACEBOOK")
+# output=conn.execute("SELECT * FROM FACEBOOK")
 
 
-i = 0
-for row in output:
-   if i>20000:
-      break
-   else:
-      print("ID: ",row[0])
+# i = 0
+# for row in output:
+#    if i>20000:
+#       break
+#    else:
+#       print("ID: ",row[0])
 
-      i = i+1
+#       i = i+1
 
 
 
-# dataframe = pd.read_sql("""SELECT text FROM FACEBOOK where polarity=1""", con=conn1)
-# # return your first five rows
+dataframe = pd.read_sql("""SELECT text FROM FACEBOOK""", con=conn1)
+# return your first five rows
 # for i in dataframe['text']:
 #     print(i)
 
 
-# print(len(dataframe['id_str'].unique()))
+print(len(dataframe['text'].unique()))
 
 # conn.execute("DROP TABLE FACEBOOK")
 # # # # conn.execute("DELETE from SAMPLE where ID = 1")

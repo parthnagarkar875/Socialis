@@ -21,6 +21,8 @@ from geopy.geocoders import Nominatim
 from time import sleep
 from multiprocessing import Process, Queue
 import multiprocessing
+import threading
+from time import time
 class MyStreamListener(tweepy.StreamListener):
     nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
     nlp1 = spacy.load('en_core_web_sm')
@@ -270,6 +272,7 @@ status_queue=Queue()
 
 
 if __name__=="__main__":
+
     # p1 = multiprocessing.Process(target=stream) 
     p2 = multiprocessing.Process(target=main_method, args=(status_queue,))
 
@@ -282,8 +285,6 @@ if __name__=="__main__":
     p2.join() 
 
     print("Done!") 
-
-
 
 # Close the MySQL connection as it finished
 # However, this won't be reached as the stream listener won't stop automatically
