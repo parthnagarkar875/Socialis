@@ -29,13 +29,13 @@ conn = conn1.cursor()
 
 
 
-dataframe = pd.read_sql("""SELECT text FROM FACEBOOK""", con=conn1)
+dataframe = pd.read_sql("""SELECT user_location FROM FACEBOOK where user_location LIKE '%Luzon%' """, con=conn1)
 # return your first five rows
-# for i in dataframe['text']:
-#     print(i)
+for i in dataframe['user_location']:
+    print(i)
 
 
-print(len(dataframe['text'].unique()))
+# print(len(dataframe['user_location'].unique()))
 
 # conn.execute("DROP TABLE FACEBOOK")
 # # # # conn.execute("DELETE from SAMPLE where ID = 1")
