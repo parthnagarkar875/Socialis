@@ -155,9 +155,6 @@ class MyStreamListener(tweepy.StreamListener):
 
 
     def on_status(self, status):
-        if status.retweeted:
-        #Avoid retweeted info, and only original tweets will be received
-            return True
         # Extract info from tweets
         print(status.text)
         self.status_queue.put(status)
@@ -219,7 +216,7 @@ def main_method(status_queue):
         created_at = status.created_at
         
         # Removing "RT @username:" from the text
-        if final_text == 'RT':
+        if final_text[:2] == 'RT':
             result = final_text.index(':')
             final_text=final_text[(result+1):]
         
