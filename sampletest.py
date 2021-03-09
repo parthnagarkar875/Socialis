@@ -1,51 +1,50 @@
-from typing_extensions import final
 import tweepy
 import settings
 import credentials
 #override tweepy.StreamListener to add logic to on_status
 
 
-class MyStreamListener(tweepy.StreamListener):
+# class MyStreamListener(tweepy.StreamListener):
 
 
-    def get_full_text(self, status):
-        final_text=str()
+#     def get_full_text(self, status):
+#         final_text=str()
 
-        # Get full text from a tweet
-        try:
-            if hasattr(status, 'retweeted_status') and hasattr(status.retweeted_status, 'extended_tweet'):
-                final_text=status.retweeted_status.extended_tweet['full_text']
-                # print("Extended Tweet:", status.retweeted_status.extended_tweet['full_text'])
-            elif hasattr(status, 'extended_tweet'):
-                final_text=status.extended_tweet['full_text']
-                # print("Extended Tweet:", status.extended_tweet['full_text'])                
-            else:
-                final_text=status.text
-                # print("Printing Full text", status.text)
-        except AttributeError as e:
-            pass
+#         # Get full text from a tweet
+#         try:
+#             if hasattr(status, 'retweeted_status') and hasattr(status.retweeted_status, 'extended_tweet'):
+#                 final_text=status.retweeted_status.extended_tweet['full_text']
+#                 # print("Extended Tweet:", status.retweeted_status.extended_tweet['full_text'])
+#             elif hasattr(status, 'extended_tweet'):
+#                 final_text=status.extended_tweet['full_text']
+#                 # print("Extended Tweet:", status.extended_tweet['full_text'])                
+#             else:
+#                 final_text=status.text
+#                 # print("Printing Full text", status.text)
+#         except AttributeError as e:
+#             pass
         
-        return final_text
+#         return final_text
 
-    def on_status(self, status):
-        final_text=self.get_full_text(status)
-        if final_text[:2] != 'RT':
-            print("https://twitter.com/"+status.user.screen_name+"/status/"+status.id_str, "\t", status.favorite_count)
-            # print(final_text)
+#     def on_status(self, status):
+#         final_text=self.get_full_text(status)
+#         if final_text[:2] != 'RT':
+#             print("https://twitter.com/"+status.user.screen_name+"/status/"+status.id_str, "\t", status.favorite_count)
+#             # print(final_text)
 
-auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
-auth.set_access_token(credentials.access_token, credentials.access_token_secret)    
-api = tweepy.API(auth,wait_on_rate_limit=True)
+# auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
+# auth.set_access_token(credentials.access_token, credentials.access_token_secret)    
+# api = tweepy.API(auth,wait_on_rate_limit=True)
 
-myStreamListener = MyStreamListener()
-myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener, tweet_mode='extended')
+# myStreamListener = MyStreamListener()
+# myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener, tweet_mode='extended')
 
-try:
-    myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
-except Exception as e:
-    print("Error. Restarting Stream.... Error: ")
-    print(e.__doc__)
-    print(e.message)
+# try:
+#     myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
+# except Exception as e:
+#     print("Error. Restarting Stream.... Error: ")
+#     print(e.__doc__)
+#     print(e.message)
 
 
 
@@ -95,3 +94,66 @@ except Exception as e:
 #     # both processes finished 
 #     print("Done!") 
 #     print("--- %s seconds ---" % (time.time() - start_time))
+
+
+
+
+
+
+date_since = "2021-03-01"
+
+# authorization of consumer key and consumer secret 
+auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret) 
+
+# set access to user's access key and access secret 
+auth.set_access_token(credentials.access_token, credentials.access_token_secret) 
+
+# calling the api 
+api = tweepy.API(auth) 
+
+# the ID of the status 
+query="(facebook) -facebook.com min_faves:500"
+
+# fetching the status 
+status = api.search(query, lang="en", since=date_since, count=1000) 
+
+like=dict()
+for i in status:
+    url="https://twitter.com/"+i.user.screen_name+"/status/"+i.id_str
+    like[url]=i.favorite_count
+
+sort_orders = sorted(like.items(), key=lambda x: x[1], reverse=True)
+print(sort_orders)
+
+
+
+# import snscrape.modules.twitter as sntwitter
+# import pandas as pd
+
+# # Creating list to append tweet data to
+# tweets_list2 = []
+
+# # Using TwitterSearchScraper to scrape data and append tweets to list
+# for i,tweet in enumerate(sntwitter.TwitterSearchScraper('its the elephant since:2020-06-01 until:2020-07-31').get_items()):
+#     if i>500:
+#         break
+#     tweets_list2.append([tweet.date, tweet.id, tweet.content, tweet.user.username])
+
+# # Creating a dataframe from the tweets list above
+# tweets_df2 = pd.DataFrame(tweets_list2, columns=['Datetime', 'Tweet Id', 'Text', 'Username'])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
