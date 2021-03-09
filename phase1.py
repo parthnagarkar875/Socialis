@@ -29,13 +29,13 @@ conn = conn1.cursor()
 
 
 
-dataframe = pd.read_sql("""SELECT user_location FROM FACEBOOK where user_location LIKE '%Luzon%' """, con=conn1)
+dataframe = pd.read_sql("""SELECT * FROM FACEBOOK """, con=conn1)
 # return your first five rows
-for i in dataframe['user_location']:
+for i in dataframe['text']:
     print(i)
 
 
-# print(len(dataframe['user_location'].unique()))
+print(len(dataframe['user_location']))
 
 # conn.execute("DROP TABLE FACEBOOK")
 # # # # conn.execute("DELETE from SAMPLE where ID = 1")
@@ -52,25 +52,25 @@ conn1.commit()
 conn1.close()
 
 # # import the module 
-# # import tweepy 
-# # import credentials
+# import tweepy 
+# import credentials
 
-# # # assign the values accordingly 
+# # assign the values accordingly 
 
-# # # authorization of consumer key and consumer secret 
-# # auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret) 
+# # authorization of consumer key and consumer secret 
+# auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret) 
 
-# # # set access to user's access key and access secret 
-# # auth.set_access_token(credentials.access_token, credentials.access_token_secret) 
+# # set access to user's access key and access secret 
+# auth.set_access_token(credentials.access_token, credentials.access_token_secret) 
 
-# # # calling the api 
-# # api = tweepy.API(auth) 
+# # calling the api 
+# api = tweepy.API(auth) 
 
-# # # the ID of the status 
-# # id = 1358086426592751616
+# # the ID of the status 
+# id = 1358086426592751616
 
-# # # fetching the status 
-# # status = api.get_status(id, tweet_mode='extended') 
+# # fetching the status 
+# status = api.get_status(id, tweet_mode='extended') 
 
 # # # printing the information
 
@@ -109,7 +109,7 @@ conn1.close()
 # # print("The contributors are : " + str(status.contributors)) 
 # # print("The is_quote_status is : " + str(status.is_quote_status)) 
 # # print("The retweet_count is : " + str(status.retweet_count)) 
-# # print("The favorite_count is : " + str(status.favorite_count)) 
+# print("The favorite_count is : " + status.favorite_count) 
 
 # # print("Has the authenticated user favourited the status? : " + str(status.favorited)) 
 # # print("Has the authenticated user retweeted the status? " + str(status.retweeted)) 
