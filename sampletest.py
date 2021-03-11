@@ -1,6 +1,52 @@
 import tweepy
+# import settings
+# import credentials
+
+
+
+
 import settings
-import credentials
+# import mysql.connector
+import pandas as pd
+import time
+import itertools
+import math
+# import credentials
+import seaborn as sns
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+#%matplotlib inline
+import plotly.express as px
+import datetime
+from IPython.display import clear_output
+
+import plotly.offline as py
+import plotly.graph_objs as go
+from plotly.subplots import make_subplots
+# py.init_notebook_mode()
+
+import re
+import nltk
+# nltk.download('punkt')
+# nltk.download('stopwords')
+from nltk.probability import FreqDist
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+import sqlite3
+import country_converter as coco
+import numpy as np
+import collections
+import warnings
+import tweepy
+
+
+
+
+
+
+
+
+
 #override tweepy.StreamListener to add logic to on_status
 
 
@@ -100,30 +146,30 @@ import credentials
 
 
 
-date_since = "2021-03-01"
+# date_since = "2021-03-01"
 
-# authorization of consumer key and consumer secret 
-auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret) 
+# # authorization of consumer key and consumer secret 
+# auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret) 
 
-# set access to user's access key and access secret 
-auth.set_access_token(credentials.access_token, credentials.access_token_secret) 
+# # set access to user's access key and access secret 
+# auth.set_access_token(credentials.access_token, credentials.access_token_secret) 
 
-# calling the api 
-api = tweepy.API(auth) 
+# # calling the api 
+# api = tweepy.API(auth) 
 
-# the ID of the status 
-query="(facebook) -facebook.com min_faves:500"
+# # the ID of the status 
+# query="(facebook) -facebook.com min_faves:500"
 
-# fetching the status 
-status = api.search(query, lang="en", since=date_since, count=1000) 
+# # fetching the status 
+# status = api.search(query, lang="en", since=date_since, count=1000) 
 
-like=dict()
-for i in status:
-    url="https://twitter.com/"+i.user.screen_name+"/status/"+i.id_str
-    like[url]=i.favorite_count
+# like=dict()
+# for i in status:
+#     url="https://twitter.com/"+i.user.screen_name+"/status/"+i.id_str
+#     like[url]=i.favorite_count
 
-sort_orders = sorted(like.items(), key=lambda x: x[1], reverse=True)
-print(sort_orders)
+# sort_orders = sorted(like.items(), key=lambda x: x[1], reverse=True)
+# print(sort_orders)
 
 
 
