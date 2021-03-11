@@ -29,15 +29,15 @@ conn = conn1.cursor()
 
 
 
-dataframe = pd.read_sql("""SELECT * FROM FACEBOOK """, con=conn1)
-# return your first five rows
-for i in dataframe['text']:
-    print(i)
+# dataframe = pd.read_sql("""SELECT * FROM FACEBOOK """, con=conn1)
+# # return your first five rows
+# for i in dataframe['named_ent']:
+#     print(i)
 
 
-print(len(dataframe['user_location']))
+# print(len(dataframe['user_location']))
 
-# conn.execute("DROP TABLE FACEBOOK")
+conn.execute("DROP TABLE FACEBOOK")
 # # # # conn.execute("DELETE from SAMPLE where ID = 1")
 
 # # result=output.fetchall()
