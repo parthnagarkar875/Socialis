@@ -2,7 +2,7 @@ import credentials # Import api/access_token keys from credentials.py
 import re
 import tweepy
 import settings
-# import mysql.connector
+import mysql.connector
 import pandas as pd
 from textblob import TextBlob
 from nltk.corpus import stopwords
