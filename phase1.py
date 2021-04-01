@@ -15,17 +15,17 @@ conn = conn1.cursor()
 # # #       VALUES (2, 'Parth')")
 
 # # # # conn1.commit()
-# output=conn.execute("SELECT * FROM FACEBOOK")
+output=conn.execute("SELECT * FROM FACEBOOK")
 
 
-# i = 0
-# for row in output:
-#    if i>20000:
-#       break
-#    else:
-#       print("ID: ",row[0])
+i = 0
+for row in output:
+   if i>20000:
+      break
+   else:
+      print("Named Entities: ",row[])
 
-#       i = i+1
+      i = i+1
 
 
 
@@ -37,7 +37,7 @@ conn = conn1.cursor()
 
 # print(len(dataframe['user_location']))
 
-conn.execute("DROP TABLE FACEBOOK")
+# conn.execute("DROP TABLE FACEBOOK")
 # # # # conn.execute("DELETE from SAMPLE where ID = 1")
 
 # # result=output.fetchall()
