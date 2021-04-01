@@ -1,8 +1,6 @@
 __pycache__/
 *.pyc
 .vscode/
-credentials.py
-keys.py
 socialis/
 Dharmik/
 sampletest.py
