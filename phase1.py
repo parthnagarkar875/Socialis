@@ -23,7 +23,7 @@ for row in output:
    if i>20000:
       break
    else:
-      print("Named Entities: ",row[])
+      print("Named Entities: ",row[0])
 
       i = i+1
 
