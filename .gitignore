@@ -1,8 +1,10 @@
 __pycache__/
 *.pyc
 .vscode/
+.git/
 socialis/
 Dharmik/
-sampletest.py
-.git/
 .ipynb_checkpoints/
+keys.py
+credentials.py
+sampletest.py

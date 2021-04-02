@@ -4,8 +4,11 @@ import pandas as pd
 conn1 = sqlite3.connect('twitter.db')
 print("Opened the database successfully")
 
-conn = conn1.cursor()
+# conn = conn1.cursor()
 
+
+df = pd.read_sql("select * from Facebook LIMIT 5", conn1)
+print(df.head())
 # # conn.execute('''CREATE TABLE SAMPLE
 # #             (ID INT PRIMARY KEY NOT NULL,
 # #              NAME TEXT NOT NULL
@@ -15,18 +18,18 @@ conn = conn1.cursor()
 # # #       VALUES (2, 'Parth')")
 
 # # # # conn1.commit()
-output=conn.execute("SELECT * FROM FACEBOOK")
+# output=conn.execute("SELECT * FROM FACEBOOK")
 
 
-i = 0
-for row in output:
-   if i>20000:
-      break
-   else:
-      print("Named Entities: ",row[0])
+# i = 0
+# for row in output:
+#    if i>20000:
+#       break
+#    else:
+#       print("Named Entities: ",row[0])
 
-      i = i+1
-
+#       i = i+1
+# # 
 
 
 # dataframe = pd.read_sql("""SELECT * FROM FACEBOOK """, con=conn1)
@@ -48,8 +51,8 @@ for row in output:
 # # #     print("Name:", row[1])
     
 
-conn1.commit()
-conn1.close()
+# conn1.commit()
+# conn1.close()
 
 # # import the module 
 # import tweepy 
@@ -150,3 +153,4 @@ conn1.close()
 # STATES = ['Alabama', 'AL', 'Alaska', 'AK', 'American Samoa', 'AS', 'Arizona', 'AZ', 'Arkansas', 'AR', 'California', 'CA', 'Colorado', 'CO', 'Connecticut', 'CT', 'Delaware', 'DE', 'District of Columbia', 'DC', 'Federated States of Micronesia', 'FM', 'Florida', 'FL', 'Georgia', 'GA', 'Guam', 'GU', 'Hawaii', 'HI', 'Idaho', 'ID', 'Illinois', 'IL', 'Indiana', 'IN', 'Iowa', 'IA', 'Kansas', 'KS', 'Kentucky', 'KY', 'Louisiana', 'LA', 'Maine', 'ME', 'Marshall Islands', 'MH', 'Maryland', 'MD', 'Massachusetts', 'MA', 'Michigan', 'MI', 'Minnesota', 'MN', 'Mississippi', 'MS', 'Missouri', 'MO', 'Montana', 'MT', 'Nebraska', 'NE', 'Nevada', 'NV', 'New Hampshire', 'NH', 'New Jersey', 'NJ', 'New Mexico', 'NM', 'New York', 'NY', 'North Carolina', 'NC', 'North Dakota', 'ND', 'Northern Mariana Islands', 'MP', 'Ohio', 'OH', 'Oklahoma', 'OK', 'Oregon', 'OR', 'Palau', 'PW', 'Pennsylvania', 'PA', 'Puerto Rico', 'PR', 'Rhode Island', 'RI', 'South Carolina', 'SC', 'South Dakota', 'SD', 'Tennessee', 'TN', 'Texas', 'TX', 'Utah', 'UT', 'Vermont', 'VT', 'Virgin Islands', 'VI', 'Virginia', 'VA', 'Washington', 'WA', 'West Virginia', 'WV', 'Wisconsin', 'WI', 'Wyoming', 'WY']
 # STATE_DICT = dict(itertools.zip_longest(*[iter(STATES)] * 2, fillvalue=""))
 # INV_STATE_DICT = dict((v,k) for k,v in STATE_DICT.items())
+
