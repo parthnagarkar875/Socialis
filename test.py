@@ -11,6 +11,8 @@ from nltk.tag import StanfordNERTagger
 import spacy
 import nltk
 import sqlite3
+import warnings
+import country_converter as coco
 import numpy
 from google_trans_new import google_translator 
 from sqlite3 import OperationalError
@@ -119,7 +121,15 @@ class MyStreamListener(tweepy.StreamListener):
             location_list = location.raw['display_name'].split(",")
             user_location1=location_list[len(location_list)-1].strip()               # Extracting only country name
             translator = google_translator()  
-            user_location = translator.translate(user_location1, lang_tgt='en')         #Translate the location to english
+            temp_location = translator.translate(user_location1, lang_tgt='en')         #Translate the location to english
+            if temp_location == "Luzon ":
+                temp_location="Philippines "
+            if temp_location == "ایران ":
+                temp_location == "Iran "
+            user_location = coco.convert(names=temp_location, to='ISO3')  
+            if user_location=='not found':
+                user_location = None          
+            warnings.filterwarnings("ignore")
         except Exception as e:
             user_location = None
 

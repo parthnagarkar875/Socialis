@@ -1,3 +1,5 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -13,7 +15,7 @@ import country_converter as coco
 import warnings
 import collections
 
-@st.cache(persist=True)
+# @st.cache(persist=True)
 # @st.cache(allow_output_mutation=True)
 def connect_engine():
     conn1 = sqlite3.connect('twitter.db')
@@ -23,12 +25,14 @@ def connect_engine():
 
 graph = st.sidebar.selectbox('Select a Graph to be plotted',('Time Series', 'Choropleth', 'Bar'))
 
-@st.cache(allow_output_mutation=True)
+# @st.cache(allow_output_mutation=True)
+# @st.cache(persist=True)
 def get_data(n):
     conn1=connect_engine()
     if n==1:
         timenow = (datetime.datetime.utcnow() - datetime.timedelta(hours=0, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
         query = "SELECT * FROM {} WHERE created_at <= '{}' " .format(settings.TABLE_NAME, timenow)
+        # query = "select * from Facebook"
         df = pd.read_sql(query, con=conn1)    
     if n==2:
         df = pd.read_sql("select * from Facebook", con=conn1)
@@ -82,11 +86,7 @@ def plot_line():
 def plot_choro():
     df=get_data(2)
     normal_names = df["user_location"].dropna().tolist()
-    normal_names = ['Philippines ' if x=='Luzon ' else x for x in normal_names]
-    normal_names = ['Iran ' if x=='ایران ' else x for x in normal_names] 
-    iso2_codes = coco.convert(names=normal_names, to='ISO3')
-    warnings.filterwarnings("ignore")
-    counter=collections.Counter(iso2_codes)
+    counter=collections.Counter(normal_names)
     df1 = pd.DataFrame.from_dict(counter, orient='index').reset_index()
     df1 = df1.rename(columns={'index':'CODE', 0:'COUNT'})
     country=list()

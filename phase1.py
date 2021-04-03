@@ -1,14 +1,20 @@
 import sqlite3
 import pandas as pd
+import country_converter as coco
+from geopy.geocoders import Nominatim
+import settings
+import datetime
+
+
 
 conn1 = sqlite3.connect('twitter.db')
 print("Opened the database successfully")
 
-# conn = conn1.cursor()
+conn = conn1.cursor()
 
 
-df = pd.read_sql("select * from Facebook LIMIT 5", conn1)
-print(df.head())
+# df = pd.read_sql("select * from Facebook LIMIT 5", conn1)
+# print(df.head())
 # # conn.execute('''CREATE TABLE SAMPLE
 # #             (ID INT PRIMARY KEY NOT NULL,
 # #              NAME TEXT NOT NULL
@@ -18,20 +24,26 @@ print(df.head())
 # # #       VALUES (2, 'Parth')")
 
 # # # # conn1.commit()
-# output=conn.execute("SELECT * FROM FACEBOOK")
+timenow = (datetime.datetime.utcnow() - datetime.timedelta(hours=0, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
+    # query = "SELECT * FROM {} WHERE created_at <= '{}' " .format(settings.TABLE_NAME, timenow)
+query = "SELECT * FROM {} WHERE created_at <= '{}' " .format(settings.TABLE_NAME, timenow)
+output=conn.execute(query)
 
 
-# i = 0
-# for row in output:
-#    if i>20000:
-#       break
-#    else:
-#       print("Named Entities: ",row[0])
+i = 0
+for row in output:
+   if i>20000:
+      break
+   else:
+      print("User Location: ",row[8])
 
-#       i = i+1
-# # 
+      i = i+1
 
+# iso2_codes = coco.convert(names='Nono', to='ISO2')
+# print(iso2_codes)
 
+# if iso2_codes=='not found':
+#     print("Yes")
 # dataframe = pd.read_sql("""SELECT * FROM FACEBOOK """, con=conn1)
 # # return your first five rows
 # for i in dataframe['named_ent']:
