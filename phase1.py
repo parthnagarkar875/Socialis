@@ -24,9 +24,9 @@ conn = conn1.cursor()
 # # #       VALUES (2, 'Parth')")
 
 # # # # conn1.commit()
-timenow = (datetime.datetime.utcnow() - datetime.timedelta(hours=0, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
+# timenow = (datetime.datetime.utcnow() - datetime.timedelta(hours=0, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
     # query = "SELECT * FROM {} WHERE created_at <= '{}' " .format(settings.TABLE_NAME, timenow)
-query = "SELECT * FROM {} WHERE created_at <= '{}' " .format(settings.TABLE_NAME, timenow)
+query = "SELECT * FROM {} " .format(settings.TABLE_NAME)
 output=conn.execute(query)
 
 

@@ -10,10 +10,16 @@ import matplotlib.pyplot as plt
 import sqlite3
 import settings
 import datetime
+from nltk.probability import FreqDist
 import time
 import country_converter as coco
 import warnings
 import collections
+
+class FileReference:
+    def __init__(self, filename):
+        self.filename = filename
+
 
 # @st.cache(persist=True)
 # @st.cache(allow_output_mutation=True)
@@ -27,6 +33,7 @@ graph = st.sidebar.selectbox('Select a Graph to be plotted',('Time Series', 'Cho
 
 # @st.cache(allow_output_mutation=True)
 # @st.cache(persist=True)
+@st.cache(hash_funcs={FileReference: connect_engine})
 def get_data(n):
     conn1=connect_engine()
     if n==1:
@@ -38,7 +45,7 @@ def get_data(n):
         df = pd.read_sql("select * from Facebook", con=conn1)
     return df
 
-
+# @st.cache(allow_output_mutation=True)
 def plot_line():
     # timenow = (datetime.datetime.utcnow() - datetime.timedelta(hours=0, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
     # query = "SELECT * FROM {} WHERE created_at <= '{}' " .format(settings.TABLE_NAME, timenow)
@@ -82,7 +89,10 @@ def plot_line():
 
     return fig
 
-@st.cache(persist=True)
+
+
+
+@st.cache
 def plot_choro():
     df=get_data(2)
     normal_names = df["user_location"].dropna().tolist()
@@ -109,6 +119,12 @@ def plot_choro():
     ))
     return g1
 
+def plot_bar(fd):
+    
+    g1=go.Figure(go.Bar(x=fd["Word"], y=fd["Frequency"], name="Freq Dist")) # 59, 89, 152
+    g1.update_traces(marker_color='rgb(59, 89, 152)', marker_line_color='rgb(8,48,107)', marker_line_width=0.5, opacity=0.7) # fig.update_layout( xaxis = dict(tickfont = dict(size=9)))
+    return g1
+
 if graph == "Time Series":
     fig=plot_line()
     st.plotly_chart(fig)
@@ -116,3 +132,21 @@ if graph == "Time Series":
 elif graph == "Choropleth":
     fig=plot_choro()
     st.plotly_chart(fig)
+
+elif graph == "Bar":
+    df=get_data(2)
+    select_status = st.sidebar.radio("Select Sentiment", ('Positive', 'Negative', 'Neutral'))
+    # Plot Bar chart   
+    li=list()
+    for i in df["named_ent"]:    
+        te=i.split(",")    
+        li.extend(te)
+
+    li = list(filter(None, li))
+    fdist = FreqDist(li)
+    fd = pd.DataFrame(fdist.most_common(10), columns = ["Word","Frequency"]).drop([0]).reindex()
+
+    if select_status == 'Positive':
+        fig=plot_bar(fd)
+        st.plotly_chart(fig)
+
