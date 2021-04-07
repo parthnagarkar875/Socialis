@@ -26,18 +26,18 @@ conn = conn1.cursor()
 # # # # conn1.commit()
 # timenow = (datetime.datetime.utcnow() - datetime.timedelta(hours=0, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
     # query = "SELECT * FROM {} WHERE created_at <= '{}' " .format(settings.TABLE_NAME, timenow)
-query = "SELECT * FROM {} " .format(settings.TABLE_NAME)
-output=conn.execute(query)
+# query = "SELECT * FROM {} " .format(settings.TABLE_NAME)
+# output=conn.execute(query)
 
 
-i = 0
-for row in output:
-   if i>20000:
-      break
-   else:
-      print("User Location: ",row[8])
+# i = 0
+# for row in output:
+#    if i>20000:
+#       break
+#    else:
+#       print("User Location: ",row[8])
 
-      i = i+1
+#       i = i+1
 
 # iso2_codes = coco.convert(names='Nono', to='ISO2')
 # print(iso2_codes)

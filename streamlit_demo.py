@@ -34,15 +34,21 @@ graph = st.sidebar.selectbox('Select a Graph to be plotted',('Time Series', 'Cho
 # @st.cache(allow_output_mutation=True)
 # @st.cache(persist=True)
 @st.cache(hash_funcs={FileReference: connect_engine})
-def get_data(n):
+def get_data(n, m):
     conn1=connect_engine()
-    if n==1:
+    if n==1 and m == 2:
         timenow = (datetime.datetime.utcnow() - datetime.timedelta(hours=0, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
         query = "SELECT * FROM {} WHERE created_at <= '{}' " .format(settings.TABLE_NAME, timenow)
         # query = "select * from Facebook"
         df = pd.read_sql(query, con=conn1)    
-    if n==2:
+    if n==2 and m == 3:
         df = pd.read_sql("select * from Facebook", con=conn1)
+    if n==2 and m == 1:
+        df = pd.read_sql("select * from Facebook where polarity = 1", con=conn1)
+    if n==2 and m == 0:
+        df = pd.read_sql("select * from Facebook where polarity = 0", con=conn1)
+    if n==2 and m == -1:
+        df = pd.read_sql("select * from Facebook where polarity = -1", con=conn1)
     return df
 
 # @st.cache(allow_output_mutation=True)
@@ -51,7 +57,7 @@ def plot_line():
     # query = "SELECT * FROM {} WHERE created_at <= '{}' " .format(settings.TABLE_NAME, timenow)
     # df = pd.read_sql(query, con=conn1)
     
-    df=get_data(1)
+    df=get_data(1, 2)
     df['created_at'] = pd.to_datetime(df['created_at'])
     result = df.groupby([pd.Grouper(key='created_at', freq='2s'), 'polarity']).count().unstack(fill_value=0).stack().reset_index()
     result = result.rename(columns={"id_str": "Num of '{}' mentions".format(settings.TRACK_WORDS[0]), "created_at":"Time in UTC"})  
@@ -90,11 +96,9 @@ def plot_line():
     return fig
 
 
-
-
 @st.cache
-def plot_choro():
-    df=get_data(2)
+def plot_choro(n):
+    df=get_data(2, n)
     normal_names = df["user_location"].dropna().tolist()
     counter=collections.Counter(normal_names)
     df1 = pd.DataFrame.from_dict(counter, orient='index').reset_index()
@@ -125,17 +129,30 @@ def plot_bar(fd):
     g1.update_traces(marker_color='rgb(59, 89, 152)', marker_line_color='rgb(8,48,107)', marker_line_width=0.5, opacity=0.7) # fig.update_layout( xaxis = dict(tickfont = dict(size=9)))
     return g1
 
+def select_sentiment():
+    select_status = st.sidebar.radio("Select Sentiment", ('Overall', 'Positive', 'Negative', 'Neutral'))
+    if select_status == 'Positive':
+        n=1
+    elif select_status == 'Neutral':
+        n=0
+    elif select_status == 'Negative':
+        n=-1    
+    else:
+        n=3
+    return n
+
 if graph == "Time Series":
     fig=plot_line()
     st.plotly_chart(fig)
 
 elif graph == "Choropleth":
-    fig=plot_choro()
+    n=select_sentiment()
+    fig=plot_choro(n)
     st.plotly_chart(fig)
 
 elif graph == "Bar":
-    df=get_data(2)
-    select_status = st.sidebar.radio("Select Sentiment", ('Positive', 'Negative', 'Neutral'))
+    n=select_sentiment()
+    df=get_data(2, n)
     # Plot Bar chart   
     li=list()
     for i in df["named_ent"]:    
@@ -146,7 +163,6 @@ elif graph == "Bar":
     fdist = FreqDist(li)
     fd = pd.DataFrame(fdist.most_common(10), columns = ["Word","Frequency"]).drop([0]).reindex()
 
-    if select_status == 'Positive':
-        fig=plot_bar(fd)
-        st.plotly_chart(fig)
+    fig=plot_bar(fd)
+    st.plotly_chart(fig)
 
