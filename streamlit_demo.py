@@ -15,6 +15,7 @@ import time
 import country_converter as coco
 import warnings
 import collections
+from nltk.corpus import stopwords
 
 class FileReference:
     def __init__(self, filename):
@@ -29,7 +30,7 @@ def connect_engine():
 
 # data=pd.read_sql("select * from facebook", conn1)
 
-graph = st.sidebar.selectbox('Select a Graph to be plotted',('Time Series', 'Choropleth', 'Bar'))
+graph = st.sidebar.selectbox('Select a Graph to be plotted',('Time Series', 'World Map plot', 'Named Entities', 'Wordcloud'))
 
 # @st.cache(allow_output_mutation=True)
 # @st.cache(persist=True)
@@ -123,11 +124,29 @@ def plot_choro(n):
     ))
     return g1
 
-def plot_bar(fd):
+def plot_bar(n, m):
+    df=get_data(2, n)
+    stop = stopwords.words('english')
+    df['text'] = df['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))    
+    li=list()
     
+    if m == 1:
+        for i in df['text']:
+            te=i.lower().split()
+            li.extend(te)
+    else:
+        for i in df["named_ent"]:    
+            te=i.split(",")    
+            li.extend(te)
+
+    li = list(filter(None, li))
+    fdist = FreqDist(li)
+    fd = pd.DataFrame(fdist.most_common(10), columns = ["Word","Frequency"]).drop([0]).reindex()
+
     g1=go.Figure(go.Bar(x=fd["Word"], y=fd["Frequency"], name="Freq Dist")) # 59, 89, 152
     g1.update_traces(marker_color='rgb(59, 89, 152)', marker_line_color='rgb(8,48,107)', marker_line_width=0.5, opacity=0.7) # fig.update_layout( xaxis = dict(tickfont = dict(size=9)))
     return g1
+
 
 def select_sentiment():
     select_status = st.sidebar.radio("Select Sentiment", ('Overall', 'Positive', 'Negative', 'Neutral'))
@@ -145,24 +164,17 @@ if graph == "Time Series":
     fig=plot_line()
     st.plotly_chart(fig)
 
-elif graph == "Choropleth":
+elif graph == "World Map plot":
     n=select_sentiment()
     fig=plot_choro(n)
     st.plotly_chart(fig)
 
-elif graph == "Bar":
+elif graph == "Named Entities":
     n=select_sentiment()
-    df=get_data(2, n)
-    # Plot Bar chart   
-    li=list()
-    for i in df["named_ent"]:    
-        te=i.split(",")    
-        li.extend(te)
-
-    li = list(filter(None, li))
-    fdist = FreqDist(li)
-    fd = pd.DataFrame(fdist.most_common(10), columns = ["Word","Frequency"]).drop([0]).reindex()
-
-    fig=plot_bar(fd)
+    fig=plot_bar(n, 2)
     st.plotly_chart(fig)
 
+elif graph == "Wordcloud":
+    n=select_sentiment()
+    fig=plot_bar(n, 1)
+    st.plotly_chart(fig)
