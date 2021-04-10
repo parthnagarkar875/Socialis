@@ -1,16 +1,183 @@
-import sqlite3
-import pandas as pd
-import country_converter as coco
-from geopy.geocoders import Nominatim
-import settings
-import datetime
+# import sqlite3
+# import pandas as pd
+# import country_converter as coco
+# from geopy.geocoders import Nominatim
+# import settings
+# import datetime
 
 
 
-conn1 = sqlite3.connect('twitter.db')
-print("Opened the database successfully")
+# conn1 = sqlite3.connect('twitter.db')
+# print("Opened the database successfully")
 
-conn = conn1.cursor()
+# conn = conn1.cursor()
+
+
+# from __future__ import unicode_literals, print_function
+# # import plac
+# import random
+# from pathlib import Path
+# import spacy
+# from tqdm import tqdm
+
+
+# TRAIN_DATA = [
+#     ('Who is Nishanth?', {
+#         'entities': [(7, 15, 'PERSON')]
+#     }),
+#      ('Who is Kamal Khumar?', {
+#         'entities': [(7, 19, 'PERSON')]
+#     }),
+#     ('I like London and Berlin.', {
+#         'entities': [(7, 13, 'LOC'), (18, 24, 'LOC')]
+#     })
+# ]
+
+# model = None
+# output_dir=Path("/home/unmodern/Parth")
+# n_iter=100
+
+# if model is not None:
+#     nlp = spacy.load(model)  
+#     print("Loaded model '%s'" % model)
+# else:
+#     nlp = spacy.blank('en')  
+#     print("Created blank 'en' model")
+
+# #set up the pipeline
+
+# if 'ner' not in nlp.pipe_names:
+#     ner = nlp.add_pipe('ner')
+#     # nlp.add_pipe(ner, last=True)
+# else:
+#     ner = nlp.get_pipe('ner')
+
+
+# for _, annotations in TRAIN_DATA:
+#     for ent in annotations.get('entities'):
+#         ner.add_label(ent[2])
+
+# other_pipes = [pipe for pipe in nlp.pipe_names if pipe != 'ner']
+# with nlp.disable_pipes(*other_pipes):  # only train NER
+#     optimizer = nlp.begin_training()
+#     for itn in range(n_iter):
+#         random.shuffle(TRAIN_DATA)
+#         losses = {}
+#         for text, annotations in tqdm(TRAIN_DATA):
+#             nlp.update(
+#                 [text],  
+#                 [annotations],  
+#                 drop=0.5,  
+#                 sgd=optimizer,
+#                 losses=losses)
+#         print(losses)
+
+
+
+
+
+
+
+
+
+# import nltk
+# # nltk.download('state_union')
+# # nltk.download('maxent_ne_chunker')
+# # nltk.download('averaged_perceptron_tagger')
+# from nltk.corpus import state_union
+# from nltk.tokenize import PunktSentenceTokenizer
+# from nltk.tokenize import sent_tokenize
+
+# train_text = state_union.raw("2005-GWBush.txt")
+# sample_text = state_union.raw("2006-GWBush.txt")
+
+
+
+# # custom_sent_tokenizer = PunktSentenceTokenizer(train_text)
+# # tokenized = custom_sent_tokenizer.tokenize(sample_text)
+
+# tokenized=sent_tokenize(train_text)
+
+# # print(tokenized)
+
+# def process_content():
+#     try:
+#         for i in tokenized[5:]:
+#             words = nltk.word_tokenize(i)
+#             tagged = nltk.pos_tag(words)
+#             namedEnt = nltk.ne_chunk(tagged, binary=True)
+#             namedEnt.draw()
+#     except Exception as e:
+#         print(str(e))
+
+
+# process_content()
+
+
+
+
+
+from nltk import ne_chunk, pos_tag, word_tokenize
+from nltk.tree import Tree
+import nltk
+def get_continuous_chunks(text):
+    chunked = ne_chunk(pos_tag(word_tokenize(text)))
+    continuous_chunk = str()
+    current_chunk = []
+    for i in chunked:
+        if type(i) == Tree:
+            current_chunk.append(" ".join([token for token, pos in i.leaves()]))
+        if current_chunk:
+            named_entity = " ".join(current_chunk)
+            if named_entity not in continuous_chunk:
+                # continuous_chunk.append(named_entity)
+                continuous_chunk=continuous_chunk+", "+named_entity
+                current_chunk = []
+        else:
+            continue
+    return continuous_chunk[2:]
+
+my_sent = "Looking back on a childhood in New York filled with events and memories, I find it rather difficult to pick one that leaves me with the fabled warm and fuzzy feelings. As the daughter of an Air Force major, I had the pleasure of traveling across America in many moving trips. I have visited the monstrous trees of the Sequoia National Forest, stood on the edge of the Grand Canyon and have jumped on the beds at Caesar's Palace in Lake Tahoe.The day I picked my dog up from the pound was one of the happiest days of both of our lives. I had gone to the pound just a week earlier with the idea that I would just 'look' at a puppy. Of course, you can no more just look at those squiggling little faces so filled with hope and joy than you can stop the sun from setting in the evening. I knew within minutes of walking in the door that I would get a puppy… but it wasn't until I saw him that I knew I had found my puppy. Looking for houses was supposed to be a fun and exciting process. Unfortunately, none of the ones that we saw seemed to match the specifications that we had established. They were too small, too impersonal, too close to the neighbors. After days of finding nothing even close, we began to wonder: was there really a perfect house out there for us?"
+
+# print(nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(my_sent))))
+
+
+# hello=nltk.ne_chunk(my_sent, binary=True)
+# print(hello)
+print(get_continuous_chunks(my_sent))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # df = pd.read_sql("select * from Facebook LIMIT 5", conn1)
@@ -29,15 +196,61 @@ conn = conn1.cursor()
 # query = "SELECT * FROM {} " .format(settings.TABLE_NAME)
 # output=conn.execute(query)
 
+# from nltk.corpus import stopwords
+# from nltk.tokenize import word_tokenize
+# from nltk.tag import StanfordNERTagger
+# import os
+# import spacy
+# from spacy.tokens import Span
+# import nltk
+# # nltk.download('punkt')
+
+# def ner_tagging(text, n):
+#     enti=str()
+#     nlp1 = spacy.load('en_core_web_sm')
+#     if n==1:
+#         # os.environ['JAVAHOME'] = settings.java_path
+#         st = StanfordNERTagger(settings.model_path, settings.ner_java_path, encoding='utf-8')
+#         tokenized_text = word_tokenize(text)            # ['This', 'is', 'the', 'game']
+#         classified_text = st.tag(tokenized_text)
+#         cond = ['PERSON', 'LOCATION', 'ORGANIZATION']
+#         for ent in classified_text: 
+#             if ent[1] in cond:                  # Only choose person, location or organization
+#                 enti = enti + "," + ent[0]                
+#     if n==2:
+#         doc = nlp1(text)
+#         cond = ['PERSON', 'GPE', 'ORG']
+#         # ORG=doc.vocab.strings['ORG']
+#         # new_ent=Span(doc, 0, 1, label=ORG)
+#         # doc.ents=list(doc.ents)+[new_ent]
+
+#         for ent in doc.ents: 
+#             if ent.label_ in cond:
+#                 enti = enti + "," + ent.text                 
+#     enti = enti[1:]       
+#     return enti
+
+# a="Hello, I work for Facebook"
+
+# enti=ner_tagging(a, 2) 
+# print(enti)
+
 
 # i = 0
 # for row in output:
 #    if i>20000:
 #       break
 #    else:
-#       print("User Location: ",row[8])
+#       print("\nText: ",row[2])
 
 #       i = i+1
+
+
+# from nltk.corpus import stopwords
+
+# print(stopwords.words('english'))
+
+
 
 # iso2_codes = coco.convert(names='Nono', to='ISO2')
 # print(iso2_codes)

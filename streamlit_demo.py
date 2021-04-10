@@ -126,13 +126,16 @@ def plot_choro(n):
 
 def plot_bar(n, m):
     df=get_data(2, n)
+    new_stopwords = ["th", "i"]
     stop = stopwords.words('english')
-    df['text'] = df['text'].apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))    
+    stop.extend(new_stopwords)
+
+    df['text'] = df['text'].str.lower().apply(lambda x: ' '.join([word for word in x.split() if word not in (stop)]))    
     li=list()
     
     if m == 1:
         for i in df['text']:
-            te=i.lower().split()
+            te=i.split()
             li.extend(te)
     else:
         for i in df["named_ent"]:    

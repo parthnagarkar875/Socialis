@@ -10,6 +10,8 @@ from nltk.tokenize import word_tokenize
 from nltk.tag import StanfordNERTagger
 import spacy
 import nltk
+from nltk import ne_chunk, pos_tag, word_tokenize
+from nltk.tree import Tree
 import sqlite3
 import warnings
 import country_converter as coco
@@ -78,6 +80,23 @@ class MyStreamListener(tweepy.StreamListener):
         except TypeError: 
             pass
 
+    def get_continuous_chunks(self, text):
+        chunked = ne_chunk(pos_tag(word_tokenize(text)))
+        continuous_chunk = []
+        current_chunk = []
+        for i in chunked:
+            if type(i) == Tree:
+                current_chunk.append(" ".join([token for token, pos in i.leaves()]))
+            if current_chunk:
+                named_entity = " ".join(current_chunk)
+                if named_entity not in continuous_chunk:
+                    continuous_chunk=continuous_chunk+", "+named_entity
+                    current_chunk = []
+            else:
+                continue
+        return continuous_chunk[2:]
+
+
     def ner_tagging(self, text, n):
         enti=str()
         if n==1:
@@ -95,7 +114,9 @@ class MyStreamListener(tweepy.StreamListener):
             for ent in doc.ents: 
                 if ent.label_ in cond:
                     enti = enti + "," + ent.text                 
-        enti = enti[1:]       
+        enti = enti[1:]   
+        if n==3:
+            enti=self.get_continuous_chunks(text)
         return enti
 
     def preprocess(self, tweet):    
