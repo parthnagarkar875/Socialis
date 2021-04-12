@@ -10,12 +10,14 @@ import matplotlib.pyplot as plt
 import sqlite3
 import settings
 import datetime
+import credentials
 from nltk.probability import FreqDist
 import time
 import country_converter as coco
 import warnings
 import collections
 from nltk.corpus import stopwords
+import tweepy
 
 class FileReference:
     def __init__(self, filename):
@@ -30,7 +32,9 @@ def connect_engine():
 
 # data=pd.read_sql("select * from facebook", conn1)
 
-graph = st.sidebar.selectbox('Select a Graph to be plotted',('Time Series', 'World Map plot', 'Named Entities', 'Wordcloud'))
+graph = st.sidebar.selectbox('Select a Graph to be plotted',('Time Series', 'World Map plot', 'Named Entities', 'Wordcloud', 'Influencers'))
+
+
 
 # @st.cache(allow_output_mutation=True)
 # @st.cache(persist=True)
@@ -150,6 +154,31 @@ def plot_bar(n, m):
     g1.update_traces(marker_color='rgb(59, 89, 152)', marker_line_color='rgb(8,48,107)', marker_line_width=0.5, opacity=0.7) # fig.update_layout( xaxis = dict(tickfont = dict(size=9)))
     return g1
 
+def plot_usernames():
+    date_since = "2021-04-10"
+    auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret) 
+    auth.set_access_token(credentials.access_token, credentials.access_token_secret) 
+    api = tweepy.API(auth) 
+    query="(facebook) -facebook.com min_faves:500"
+    status = api.search(query, lang="en", since=date_since, count=1000) 
+
+    like=dict()
+    for i in status:
+        like[i.user.screen_name]=i.favorite_count
+
+    sort_orders = sorted(like.items(), key=lambda x: x[1], reverse=True)
+
+    likes=list()
+    usernames=list()
+    j=0
+    for i in sort_orders:
+        if j<10:
+            likes.append(i[1])
+            usernames.append(i[0])
+            j=j+1
+
+    fig = go.Figure([go.Bar(x=usernames, y=likes)])
+    return fig
 
 def select_sentiment():
     select_status = st.sidebar.radio("Select Sentiment", ('Overall', 'Positive', 'Negative', 'Neutral'))
@@ -162,6 +191,7 @@ def select_sentiment():
     else:
         n=3
     return n
+
 
 if graph == "Time Series":
     fig=plot_line()
@@ -180,4 +210,8 @@ elif graph == "Named Entities":
 elif graph == "Wordcloud":
     n=select_sentiment()
     fig=plot_bar(n, 1)
+    st.plotly_chart(fig)
+
+elif graph == "Influencers":
+    fig=plot_usernames()
     st.plotly_chart(fig)
