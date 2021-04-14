@@ -38,7 +38,7 @@ graph = st.sidebar.selectbox('Select a Graph to be plotted',('Time Series', 'Wor
 
 # @st.cache(allow_output_mutation=True)
 # @st.cache(persist=True)
-@st.cache(hash_funcs={FileReference: connect_engine})
+@st.cache(suppress_st_warning=True, hash_funcs={FileReference: connect_engine})
 def get_data(n, m):
     conn1=connect_engine()
     if n==1 and m == 2:
@@ -101,7 +101,7 @@ def plot_line():
     return fig
 
 
-@st.cache
+@st.cache(suppress_st_warning=True)
 def plot_choro(n):
     df=get_data(2, n)
     normal_names = df["user_location"].dropna().tolist()
@@ -215,3 +215,4 @@ elif graph == "Wordcloud":
 elif graph == "Influencers":
     fig=plot_usernames()
     st.plotly_chart(fig)
+

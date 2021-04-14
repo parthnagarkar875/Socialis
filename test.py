@@ -82,7 +82,7 @@ class MyStreamListener(tweepy.StreamListener):
 
     def get_continuous_chunks(self, text):
         chunked = ne_chunk(pos_tag(word_tokenize(text)))
-        continuous_chunk = []
+        continuous_chunk = str()
         current_chunk = []
         for i in chunked:
             if type(i) == Tree:
@@ -264,7 +264,7 @@ def main_method(status_queue):
         else:
             polarity = 0
         subjectivity = sentiment.subjectivity
-        enti=a.ner_tagging(text, 2)      # Named entity recognition
+        enti=a.ner_tagging(text, 3)      # Named entity recognition
         user_created_at = status.user.created_at
         temp_location = a.deEmojify(status.user.location)        
         user_location=a.get_location(temp_location)        
