@@ -114,29 +114,29 @@ conn = conn1.cursor()
 # process_content()
 
 
-from sklearn.decomposition import LatentDirichletAllocation
-from sklearn.decomposition import NMF
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.pipeline import make_pipeline
-from sklearn.feature_extraction.text import CountVectorizer
-from nltk.corpus import stopwords
+# from sklearn.decomposition import LatentDirichletAllocation
+# from sklearn.decomposition import NMF
+# from sklearn.feature_extraction.text import TfidfVectorizer
+# from sklearn.pipeline import make_pipeline
+# from sklearn.feature_extraction.text import CountVectorizer
+# from nltk.corpus import stopwords
 
 
-df = pd.read_sql("select * from Facebook", conn1)
+# df = pd.read_sql("select * from Facebook", conn1)
 
-stoplist = stopwords.words('english') + ['though']
+# stoplist = stopwords.words('english') + ['though']
 
-c_vec = CountVectorizer(stop_words=stoplist, ngram_range=(2,3))
-# matrix of ngrams
-ngrams = c_vec.fit_transform(df['text'])
-# count frequency of ngrams
-count_values = ngrams.toarray().sum(axis=0)
-# list of ngrams
-vocab = c_vec.vocabulary_
-df_ngram = pd.DataFrame(sorted([(count_values[i],k) for k,i in vocab.items()], reverse=True)
-            ).rename(columns={0: 'frequency', 1:'bigram/trigram'})
+# c_vec = CountVectorizer(stop_words=stoplist, ngram_range=(2,3))
+# # matrix of ngrams
+# ngrams = c_vec.fit_transform(df['text'])
+# # count frequency of ngrams
+# count_values = ngrams.toarray().sum(axis=0)
+# # list of ngrams
+# vocab = c_vec.vocabulary_
+# df_ngram = pd.DataFrame(sorted([(count_values[i],k) for k,i in vocab.items()], reverse=True)
+#             ).rename(columns={0: 'frequency', 1:'bigram/trigram'})
 
-print(df_ngram.head(10))
+# print(df_ngram.head(10))
 
 
 # from nltk import ne_chunk, pos_tag, word_tokenize
@@ -172,19 +172,18 @@ print(df_ngram.head(10))
 
 
 
+extract_data={
+            # 1:"SELECT * FROM {} WHERE created_at <= '{}' ".format(settings.TABLE_NAME, timenow),
+            2:"select * from Facebook",
+            3:"select * from Facebook where polarity = 1",
+            4:"select * from Facebook where polarity = 0",
+            5: "select * from Facebook where polarity = -1"
+        }
+        
+query = extract_data.get(2)
 
 
-
-
-
-
-
-
-
-
-
-
-
+print(type(query))
 
 
 
