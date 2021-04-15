@@ -18,6 +18,11 @@ import warnings
 import collections
 from nltk.corpus import stopwords
 import tweepy
+from sklearn.feature_extraction.text import CountVectorizer
+from nltk.corpus import stopwords
+
+
+
 
 class FileReference:
     def __init__(self, filename):
@@ -32,7 +37,7 @@ def connect_engine():
 
 # data=pd.read_sql("select * from facebook", conn1)
 
-graph = st.sidebar.selectbox('Select a Graph to be plotted',('Time Series', 'World Map plot', 'Named Entities', 'Wordcloud', 'Influencers'))
+graph = st.sidebar.selectbox('Select a Graph to be plotted',('Time Series', 'World Map plot', 'Named Entities', 'Wordcloud', 'Influencers', 'Bigram', 'Volume Analysis'))
 
 
 
@@ -193,6 +198,38 @@ def select_sentiment():
     return n
 
 
+def get_bigram():
+    stoplist = stopwords.words('english') + ['though']
+
+    c_vec = CountVectorizer(stop_words=stoplist, ngram_range=(2,3))
+    # matrix of ngrams
+
+    df=get_data(2,3)
+    ngrams = c_vec.fit_transform(df['text'])
+    # count frequency of ngrams
+    count_values = ngrams.toarray().sum(axis=0)
+    # list of ngrams
+    vocab = c_vec.vocabulary_
+    df = pd.DataFrame(sorted([(count_values[i],k) for k,i in vocab.items()], reverse=True)
+                ).rename(columns={0: 'Frequency', 1:'Word'})
+    fd=df.head(10)
+
+    g1=go.Figure(go.Bar(x=fd["Word"], y=fd["Frequency"], name="Freq Dist")) # 59, 89, 152
+    g1.update_traces(marker_color='rgb(59, 89, 152)', marker_line_color='rgb(8,48,107)', marker_line_width=0.5, opacity=0.7) # fig.update_layout( xaxis = dict(tickfont = dict(size=9)))
+    return g1
+
+
+def plot_pie():
+    df=get_data(2,3)
+    val_list=list()
+    val_list.append(df['polarity'].value_counts()[0])
+    val_list.append(df['polarity'].value_counts()[1])
+    val_list.append(df['polarity'].value_counts()[-1])
+    labels=[0,1,-1]
+    g1=go.Figure(go.Pie(labels=labels, values=val_list))
+    return g1
+
+
 if graph == "Time Series":
     fig=plot_line()
     st.plotly_chart(fig)
@@ -214,5 +251,13 @@ elif graph == "Wordcloud":
 
 elif graph == "Influencers":
     fig=plot_usernames()
+    st.plotly_chart(fig)
+
+elif graph == "Bigram":
+    fig=get_bigram()
+    st.plotly_chart(fig)
+
+elif graph == 'Volume Analysis':
+    fig=plot_pie()
     st.plotly_chart(fig)
 

@@ -1,5 +1,5 @@
-# import sqlite3
-# import pandas as pd
+import sqlite3
+import pandas as pd
 # import country_converter as coco
 # from geopy.geocoders import Nominatim
 # import settings
@@ -7,10 +7,10 @@
 
 
 
-# conn1 = sqlite3.connect('twitter.db')
-# print("Opened the database successfully")
+conn1 = sqlite3.connect('twitter.db')
+print("Opened the database successfully")
 
-# conn = conn1.cursor()
+conn = conn1.cursor()
 
 
 # from __future__ import unicode_literals, print_function
@@ -114,37 +114,59 @@
 # process_content()
 
 
+from sklearn.decomposition import LatentDirichletAllocation
+from sklearn.decomposition import NMF
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.pipeline import make_pipeline
+from sklearn.feature_extraction.text import CountVectorizer
+from nltk.corpus import stopwords
 
 
+df = pd.read_sql("select * from Facebook", conn1)
 
-from nltk import ne_chunk, pos_tag, word_tokenize
-from nltk.tree import Tree
-import nltk
-def get_continuous_chunks(text):
-    chunked = ne_chunk(pos_tag(word_tokenize(text)))
-    continuous_chunk = str()
-    current_chunk = []
-    for i in chunked:
-        if type(i) == Tree:
-            current_chunk.append(" ".join([token for token, pos in i.leaves()]))
-        if current_chunk:
-            named_entity = " ".join(current_chunk)
-            if named_entity not in continuous_chunk:
-                # continuous_chunk.append(named_entity)
-                continuous_chunk=continuous_chunk+", "+named_entity
-                current_chunk = []
-        else:
-            continue
-    return continuous_chunk[2:]
+stoplist = stopwords.words('english') + ['though']
 
-my_sent = "Looking back on a childhood in New York filled with events and memories, I find it rather difficult to pick one that leaves me with the fabled warm and fuzzy feelings. As the daughter of an Air Force major, I had the pleasure of traveling across America in many moving trips. I have visited the monstrous trees of the Sequoia National Forest, stood on the edge of the Grand Canyon and have jumped on the beds at Caesar's Palace in Lake Tahoe.The day I picked my dog up from the pound was one of the happiest days of both of our lives. I had gone to the pound just a week earlier with the idea that I would just 'look' at a puppy. Of course, you can no more just look at those squiggling little faces so filled with hope and joy than you can stop the sun from setting in the evening. I knew within minutes of walking in the door that I would get a puppy… but it wasn't until I saw him that I knew I had found my puppy. Looking for houses was supposed to be a fun and exciting process. Unfortunately, none of the ones that we saw seemed to match the specifications that we had established. They were too small, too impersonal, too close to the neighbors. After days of finding nothing even close, we began to wonder: was there really a perfect house out there for us?"
+c_vec = CountVectorizer(stop_words=stoplist, ngram_range=(2,3))
+# matrix of ngrams
+ngrams = c_vec.fit_transform(df['text'])
+# count frequency of ngrams
+count_values = ngrams.toarray().sum(axis=0)
+# list of ngrams
+vocab = c_vec.vocabulary_
+df_ngram = pd.DataFrame(sorted([(count_values[i],k) for k,i in vocab.items()], reverse=True)
+            ).rename(columns={0: 'frequency', 1:'bigram/trigram'})
+
+print(df_ngram.head(10))
+
+
+# from nltk import ne_chunk, pos_tag, word_tokenize
+# from nltk.tree import Tree
+# import nltk
+# def get_continuous_chunks(text):
+#     chunked = ne_chunk(pos_tag(word_tokenize(text)))
+#     continuous_chunk = str()
+#     current_chunk = []
+#     for i in chunked:
+#         if type(i) == Tree:
+#             current_chunk.append(" ".join([token for token, pos in i.leaves()]))
+#         if current_chunk:
+#             named_entity = " ".join(current_chunk)
+#             if named_entity not in continuous_chunk:
+#                 # continuous_chunk.append(named_entity)
+#                 continuous_chunk=continuous_chunk+", "+named_entity
+#                 current_chunk = []
+#         else:
+#             continue
+#     return continuous_chunk[2:]
+
+# my_sent = "Looking back on a childhood in New York filled with events and memories, I find it rather difficult to pick one that leaves me with the fabled warm and fuzzy feelings. As the daughter of an Air Force major, I had the pleasure of traveling across America in many moving trips. I have visited the monstrous trees of the Sequoia National Forest, stood on the edge of the Grand Canyon and have jumped on the beds at Caesar's Palace in Lake Tahoe.The day I picked my dog up from the pound was one of the happiest days of both of our lives. I had gone to the pound just a week earlier with the idea that I would just 'look' at a puppy. Of course, you can no more just look at those squiggling little faces so filled with hope and joy than you can stop the sun from setting in the evening. I knew within minutes of walking in the door that I would get a puppy… but it wasn't until I saw him that I knew I had found my puppy. Looking for houses was supposed to be a fun and exciting process. Unfortunately, none of the ones that we saw seemed to match the specifications that we had established. They were too small, too impersonal, too close to the neighbors. After days of finding nothing even close, we began to wonder: was there really a perfect house out there for us?"
 
 # print(nltk.ne_chunk(nltk.pos_tag(nltk.word_tokenize(my_sent))))
 
 
 # hello=nltk.ne_chunk(my_sent, binary=True)
 # print(hello)
-print(get_continuous_chunks(my_sent))
+# print(get_continuous_chunks(my_sent))
 
 
 
