@@ -172,19 +172,22 @@ conn = conn1.cursor()
 
 
 
-extract_data={
-            # 1:"SELECT * FROM {} WHERE created_at <= '{}' ".format(settings.TABLE_NAME, timenow),
-            2:"select * from Facebook",
-            3:"select * from Facebook where polarity = 1",
-            4:"select * from Facebook where polarity = 0",
-            5: "select * from Facebook where polarity = -1"
-        }
+# extract_data={
+#             # 1:"SELECT * FROM {} WHERE created_at <= '{}' ".format(settings.TABLE_NAME, timenow),
+#             2:"select * from Facebook",
+#             3:"select * from Facebook where polarity = 1",
+#             4:"select * from Facebook where polarity = 0",
+#             5: "select * from Facebook where polarity = -1"
+#         }
         
-query = extract_data.get(2)
+# query = extract_data.get(2)
 
 
-print(type(query))
+# print(type(query))
 
+a=[1,2,3,4,5]
+a.remove(4)
+print(a)
 
 
 

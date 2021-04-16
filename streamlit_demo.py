@@ -17,7 +17,6 @@ import time
 import country_converter as coco
 import warnings
 import collections
-from nltk.corpus import stopwords
 import tweepy
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import stopwords
@@ -51,8 +50,8 @@ class Socialis:
 
     # data=pd.read_sql("select * from facebook", conn1)
 
-    @st.cache(hash_funcs={FileReference: connect_engine}, suppress_st_warning=True, show_spinner=False,
-            allow_output_mutation=True)
+    # @st.cache(hash_funcs={FileReference: connect_engine}, suppress_st_warning=True, show_spinner=False,
+            # allow_output_mutation=True)
     def get_data(self, n):
         conn1=self.connect_engine()
         timenow = (datetime.datetime.utcnow() - datetime.timedelta(hours=0, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
@@ -131,7 +130,7 @@ class Socialis:
         return g1
 
 
-    @st.cache(suppress_st_warning=True, show_spinner=False, allow_output_mutation=True)
+    # @st.cache(suppress_st_warning=True, show_spinner=False, allow_output_mutation=True)
     def plot_bar(self, n, m):
         df = self.get_data(n)
         new_stopwords = ["th", "i"]
@@ -146,8 +145,10 @@ class Socialis:
                 li.extend(te)
         else:
             for i in df["named_ent"]:
-                te = i.split(",")
+                j=i.replace(" ", "")
+                te = j.split(",")
                 li.extend(te)
+                # li.remove('RT')
 
         li = list(filter(None, li))
         fdist = FreqDist(li)
