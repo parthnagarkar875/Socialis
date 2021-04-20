@@ -4,15 +4,38 @@ import pandas as pd
 # from geopy.geocoders import Nominatim
 # import settings
 # import datetime
-
-
+import collections
+import country_converter as coco
+import pycountry
 
 conn1 = sqlite3.connect('twitter.db')
 print("Opened the database successfully")
 
 conn = conn1.cursor()
 
+query="select * from Facebook"
 
+df=pd.read_sql(query, con=conn1)
+# li=['India', 'Italy']
+# sg=coco.convert(names=li, to='ISO3')
+# df = df[df.user_location.isin(sg)]
+
+# print(df.head())
+# # normal_names = df["user_location"].dropna().tolist()
+# counter = collections.Counter(normal_names)
+# country=list()
+# # freq=list()
+# for i,j in counter.most_common(10):
+#     country.append(pycountry.countries.get(alpha_3=i).name)
+#     # freq.append(j)
+# df = pd.DataFrame(country, columns =['Country'])
+# print(df)
+# df1 = pd.DataFrame.from_dict(counter, orient='index').reset_index()
+# df1 = df1.rename(columns={'index': 'CODE', 0: 'COUNT'})
+# country = list()
+
+
+# print(df.head())
 # from __future__ import unicode_literals, print_function
 # # import plac
 # import random
@@ -185,9 +208,6 @@ conn = conn1.cursor()
 
 # print(type(query))
 
-a=[1,2,3,4,5]
-a.remove(4)
-print(a)
 
 
 

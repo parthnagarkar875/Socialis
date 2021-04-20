@@ -86,6 +86,7 @@ protobuf==3.15.5
 psycopg2-binary==2.8.6
 ptyprocess==0.7.0
 pyarrow==3.0.0
+pycountry==20.7.3
 pycparser==2.20
 pydantic==1.7.3
 pydeck==0.6.1
@@ -112,7 +113,7 @@ smmap==4.0.0
 spacy==3.0.5
 spacy-legacy==3.0.1
 srsly==2.4.0
-streamlit==0.79.0
+streamlit==0.80.0
 terminado==0.9.4
 testpath==0.4.4
 textblob==0.15.3

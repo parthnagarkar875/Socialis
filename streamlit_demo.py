@@ -1,5 +1,5 @@
 import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter("ignore")
 import streamlit as st
 st.set_page_config(layout="wide", page_title="Socialis", page_icon="socialis-logo.png")
 import pandas as pd
@@ -20,6 +20,7 @@ import collections
 import tweepy
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import stopwords
+import pycountry
 
 
 def local_css(file_name):
@@ -47,9 +48,6 @@ class Socialis:
         conn1 = sqlite3.connect('twitter.db')
         return conn1
 
-
-    # data=pd.read_sql("select * from facebook", conn1)
-
     # @st.cache(hash_funcs={FileReference: connect_engine}, suppress_st_warning=True, show_spinner=False,
             # allow_output_mutation=True)
     def get_data(self, n):
@@ -68,11 +66,10 @@ class Socialis:
         df=pd.read_sql(query, con=conn1)
         return df
 
-
     # @st.cache(suppress_st_warning=True, show_spinner=False, allow_output_mutation=True)
     def plot_line(self):
-
-        df = self.get_data(1)
+        df1 = self.get_data(1)
+        df = self.get_freq_country(df1)
         df['created_at'] = pd.to_datetime(df['created_at'])
         result = df.groupby([pd.Grouper(key='created_at', freq='2s'), 'polarity']).count().unstack(
             fill_value=0).stack().reset_index()
@@ -132,7 +129,8 @@ class Socialis:
 
     # @st.cache(suppress_st_warning=True, show_spinner=False, allow_output_mutation=True)
     def plot_bar(self, n, m):
-        df = self.get_data(n)
+        df1 = self.get_data(n)
+        df = self.get_freq_country(df1)
         new_stopwords = ["th", "i"]
         stop = stopwords.words('english')
         stop.extend(new_stopwords)
@@ -184,6 +182,22 @@ class Socialis:
         fig = go.Figure([go.Bar(x=usernames, y=likes)])
         return fig
 
+    def get_freq_country(self, df):
+        normal_names = df["user_location"].dropna().tolist()
+        counter = collections.Counter(normal_names)      
+        country=list()
+        for i,j in counter.most_common(5):
+            country.append(pycountry.countries.get(alpha_3=i).name)
+        df1 = pd.DataFrame(country, columns =['Country'])
+
+        Genres = st.sidebar.multiselect("Select country", df1['Country'])
+        if Genres:            
+            sg=coco.convert(names=Genres, to='ISO3')
+            if type(sg)!= list:
+                sg=[sg]
+            df = df[df.user_location.isin(sg)]
+        return df
+
     def select_sentiment(self):
         select_status = st.sidebar.radio("Select Sentiment", ('Overall', 'Positive', 'Negative', 'Neutral'))
         return select_status
@@ -194,7 +208,9 @@ class Socialis:
         c_vec = CountVectorizer(stop_words=stoplist, ngram_range=(2,3))
         # matrix of ngrams
 
-        df=self.get_data('Overall')
+        df1=self.get_data('Overall')
+        df = self.get_freq_country(df1)
+
         ngrams = c_vec.fit_transform(df['text'])
         # count frequency of ngrams
         count_values = ngrams.toarray().sum(axis=0)
@@ -207,7 +223,6 @@ class Socialis:
         g1=go.Figure(go.Bar(x=fd["Word"], y=fd["Frequency"], name="Freq Dist")) # 59, 89, 152
         g1.update_traces(marker_color='rgb(59, 89, 152)', marker_line_color='rgb(8,48,107)', marker_line_width=0.5, opacity=0.7) # fig.update_layout( xaxis = dict(tickfont = dict(size=9)))
         return g1
-
 
     def plot_pie(self):
         df=self.get_data('Overall')
@@ -223,6 +238,7 @@ graph = st.sidebar.selectbox('Select a Graph to be plotted',
                                 ('Time Series', 'World Map Plot', 'Named Entities', 'Word Cloud', 'Influencers', 'Bigram', 'Volume Analysis'))
 a=Socialis()
 
+
 if graph == "Time Series":
     st.header("Time Series Chart: Sentiments Over Time")
     fig = a.plot_line()
@@ -235,7 +251,6 @@ elif graph == "World Map Plot":
     fig = a.plot_choro(n)
     fig.update_layout(autosize=False, height=600)
     st.plotly_chart(fig, use_container_width=True)
-
 
 elif graph == "Named Entities":
     st.header("Named Entities: Bar Graph")
