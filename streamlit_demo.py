@@ -141,6 +141,11 @@ class Socialis:
             for i in df['text']:
                 te = i.split()
                 li.extend(te)
+        elif m == 2:
+            for i in df['users_list']:
+                j=i.replace(" ", "")
+                te=j.split(',')
+                li.extend(te)
         else:
             for i in df["named_ent"]:
                 j=i.replace(" ", "")
@@ -165,8 +170,14 @@ class Socialis:
         status = api.search(query, lang="en", since=date_since, count=1000)
 
         like=dict()
+        '''
+        Text vaale list me text store ho raha hai.
+        '''
+        text=list()
+
         for i in status:
             like[i.user.screen_name]=i.favorite_count
+            text.append(i.text)
 
         sort_orders = sorted(like.items(), key=lambda x: x[1], reverse=True)
 
@@ -235,7 +246,7 @@ class Socialis:
         return g1
 
 graph = st.sidebar.selectbox('Select a Graph to be plotted',
-                                ('Time Series', 'World Map Plot', 'Named Entities', 'Word Cloud', 'Influencers', 'Bigram', 'Volume Analysis'))
+                                ('Time Series', 'World Map Plot', 'Named Entities', 'Word Cloud', 'Influencers', 'Bigram', 'Volume Analysis', 'Highest Mentions'))
 a=Socialis()
 
 
@@ -281,5 +292,12 @@ elif graph == "Bigram":
 elif graph == 'Volume Analysis':
     st.header("Volume Analysis by Words")
     fig = a.plot_pie()
+    fig.update_layout(autosize=False, height=600)
+    st.plotly_chart(fig, use_container_width=True)
+
+elif graph == 'Highest Mentions':
+    st.header("Highest Twitter account mentions")
+    n = a.select_sentiment()
+    fig = a.plot_bar(n, 2)
     fig.update_layout(autosize=False, height=600)
     st.plotly_chart(fig, use_container_width=True)

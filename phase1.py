@@ -16,6 +16,10 @@ conn = conn1.cursor()
 query="select * from Facebook"
 
 df=pd.read_sql(query, con=conn1)
+str1="hello, bye"
+print(str1.split(',').strip())
+# for i in df.users_list:
+#     print(i)
 # li=['India', 'Italy']
 # sg=coco.convert(names=li, to='ISO3')
 # df = df[df.user_location.isin(sg)]
