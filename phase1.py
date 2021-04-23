@@ -1,28 +1,84 @@
-import sqlite3
-import pandas as pd
+# import sqlite3
+# import pandas as pd
+# # import country_converter as coco
+# # from geopy.geocoders import Nominatim
+# # import settings
+# # import datetime
+# import collections
 # import country_converter as coco
-# from geopy.geocoders import Nominatim
-# import settings
-# import datetime
-import collections
-import country_converter as coco
-import pycountry
+# import pycountry
 
-conn1 = sqlite3.connect('twitter.db')
-print("Opened the database successfully")
+# conn1 = sqlite3.connect('twitter.db')
+# print("Opened the database successfully")
 
-conn = conn1.cursor()
+# conn = conn1.cursor()
 
-query="select * from Facebook"
+# query="select * from Facebook"
 
-df=pd.read_sql(query, con=conn1)
-str1="hello, bye"
-print(str1.split(',').strip())
+# df=pd.read_sql(query, con=conn1)
+# str1="hello, bye"
+# print(str1.split(',').strip())
 # for i in df.users_list:
 #     print(i)
 # li=['India', 'Italy']
 # sg=coco.convert(names=li, to='ISO3')
 # df = df[df.user_location.isin(sg)]
+
+
+import psycopg2
+
+try:
+    connect_str = "dbname='test' user='postgres' host='localhost' " + \
+                  "password='helloParth'"
+    # use our connection values to establish a connection
+    conn = psycopg2.connect(connect_str)
+    # create a psycopg2 cursor that can execute queries
+    cursor = conn.cursor()
+    # create a new table with a single column called "name"
+    cursor.execute("""CREATE TABLE tutorials (name char(40));""")
+    # run a SELECT statement - no data in there, but we can try it
+    cursor.execute("""SELECT * from tutorials""")
+    conn.commit() # <--- makes sure the change is shown in the database
+    rows = cursor.fetchall()
+    print(rows)
+    cursor.close()
+    conn.close()
+except Exception as e:
+    print("Uh oh, can't connect. Invalid dbname, user or password?")
+    print(e)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # print(df.head())
 # # normal_names = df["user_location"].dropna().tolist()
