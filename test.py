@@ -21,6 +21,7 @@ from sqlite3 import OperationalError
 import numpy
 import preprocessor as p
 import os
+import psycopg2
 from geopy.geocoders import Nominatim
 from time import sleep
 from multiprocessing import Process, Queue
@@ -214,18 +215,39 @@ def stream():
     myStreamListener = MyStreamListener(status_queue)
     myStream = tweepy.Stream(auth = api.auth, listener = myStreamListener, tweet_mode='extended')
 
-    myconn =sqlite3.connect('twitter.db')
+    # myconn =sqlite3.connect('twitter.db')
 
-    if myStreamListener.check_conn(myconn) == True:        
-        mycursor = myconn.cursor()
-        try:
-            output=myconn.execute("SELECT COUNT(*) FROM {}".format(settings.TABLE_NAME))
-            result=output.fetchall()
-        except OperationalError:
-            myconn.execute("CREATE TABLE {} ({})".format(settings.TABLE_NAME, settings.TABLE_ATTRIBUTES))
-            myconn.commit()
+    connect_str = "dbname='test' user='postgres' host='localhost' " + \
+                "password='helloParth'"
+    
+    myconn = psycopg2.connect(connect_str)
 
-        myconn.close()
+    cur = myconn.cursor()
+    '''
+    Check if this table exits. If not, then create a new one.
+    '''
+    cur.execute("""
+            SELECT COUNT(*)
+            FROM information_schema.tables
+            WHERE table_name = '{0}'
+            """.format(settings.TABLE_NAME))
+    if cur.fetchone()[0] == 0:
+        cur.execute("CREATE TABLE {} ({});".format(settings.TABLE_NAME, settings.TABLE_ATTRIBUTES))
+        myconn.commit()
+    cur.close()
+
+
+
+    # if myStreamListener.check_conn(myconn) == True:        
+    #     mycursor = myconn.cursor()
+    #     try:
+    #         output=mycursor.execute("SELECT COUNT(*) FROM {}".format(settings.TABLE_NAME))
+    #         result=output.fetchall()
+    #     except OperationalError:
+    #         mycursor.execute("CREATE TABLE {} ({})".format(settings.TABLE_NAME, settings.TABLE_ATTRIBUTES))
+    #         mycursor.commit()
+
+    #     mycursor.close()
 
     try:
         myStream.filter(languages=["en"], track = settings.TRACK_WORDS)
@@ -285,16 +307,31 @@ def main_method(status_queue):
         print(text)
         print("Long: {}, Lati: {}".format(longitude, latitude))
 
-        myconn =sqlite3.connect('twitter.db')
+        # myconn =sqlite3.connect('twitter.db')
 
-        if a.check_conn(myconn) == True:        
-            mycursor = myconn.cursor()
+        connect_str = "dbname='test' user='postgres' host='localhost' " + \
+                  "password='helloParth'"
+        
+        conn = psycopg2.connect(connect_str)
+
+        if a.check_conn(conn) == True:        
+            cursor = conn.cursor()
             sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, users_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
             val = (id_str, created_at, text, polarity, subjectivity, enti, user_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
-            mycursor.execute(sql, val)
-            myconn.commit()
+            cursor.execute(sql, val)
+            conn.commit() 
             print("Inserted")
-            mycursor.close()
+            cursor.close()
+            conn.close()
+
+        # if a.check_conn(myconn) == True:        
+        #     mycursor = myconn.cursor()
+        #     sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, users_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
+        #     val = (id_str, created_at, text, polarity, subjectivity, enti, user_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
+        #     mycursor.execute(sql, val)
+        #     myconn.commit()
+        #     print("Inserted")
+        #     mycursor.close()
 
 status_queue=Queue()    
 
