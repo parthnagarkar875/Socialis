@@ -60,8 +60,7 @@ class Socialis:
     time.sleep(2)
     splash.empty()
 
-    @staticmethod
-    def connect_engine():
+    def connect_engine(self):
         connect_str = "dbname='test' user='postgres' host='localhost' " + \
                 "password='helloParth'"
     
@@ -180,8 +179,7 @@ class Socialis:
                          opacity=0.7)  # fig.update_layout( xaxis = dict(tickfont = dict(size=9)))
         return g1
 
-    @staticmethod
-    def plot_usernames():
+    def plot_usernames(self):
 
         Previous_Date = datetime.datetime.today() - datetime.timedelta(days=2)
         date_since = str(Previous_Date.strftime ('%Y-%m-%d')) 
@@ -220,8 +218,7 @@ class Socialis:
         figure = go.Figure([go.Bar(x=usernames, y=likes)])
         return figure
 
-    @staticmethod
-    def get_freq_country(df):
+    def get_freq_country(self, df):
         normal_names = df["user_location"].dropna().tolist()
         counter = collections.Counter(normal_names)
         country = list()
@@ -237,8 +234,7 @@ class Socialis:
             df = df[df.user_location.isin(sg)]
         return df
 
-    @staticmethod
-    def select_sentiment():
+    def select_sentiment(self):
         select_status = st.sidebar.radio("Select Sentiment", ('Overall', 'Positive', 'Negative', 'Neutral'))
         return select_status
 
