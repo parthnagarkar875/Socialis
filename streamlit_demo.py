@@ -21,6 +21,7 @@ import tweepy
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import stopwords
 import pycountry
+import psycopg2
 
 
 def local_css(file_name):
@@ -45,7 +46,11 @@ class FileReference:
 
 class Socialis:
     def connect_engine(self):
-        conn1 = sqlite3.connect('twitter.db')
+        # conn1 = sqlite3.connect('twitter.db')
+        connect_str = "dbname='test' user='postgres' host='localhost' " + \
+                "password='helloParth'"
+    
+        conn1 = psycopg2.connect(connect_str)
         return conn1
 
     # @st.cache(hash_funcs={FileReference: connect_engine}, suppress_st_warning=True, show_spinner=False,

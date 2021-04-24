@@ -25,28 +25,38 @@
 # df = df[df.user_location.isin(sg)]
 
 
-import psycopg2
+# import psycopg2
 
-try:
-    connect_str = "dbname='test' user='postgres' host='localhost' " + \
-                  "password='helloParth'"
-    # use our connection values to establish a connection
-    conn = psycopg2.connect(connect_str)
-    # create a psycopg2 cursor that can execute queries
-    cursor = conn.cursor()
-    # create a new table with a single column called "name"
-    cursor.execute("""CREATE TABLE tutorials (name char(40));""")
-    # run a SELECT statement - no data in there, but we can try it
-    cursor.execute("""SELECT * from tutorials""")
-    conn.commit() # <--- makes sure the change is shown in the database
-    rows = cursor.fetchall()
-    print(rows)
-    cursor.close()
-    conn.close()
-except Exception as e:
-    print("Uh oh, can't connect. Invalid dbname, user or password?")
-    print(e)
+# try:
+#     connect_str = "dbname='test' user='postgres' host='localhost' " + \
+#                   "password='helloParth'"
+#     # use our connection values to establish a connection
+#     conn = psycopg2.connect(connect_str)
+#     # create a psycopg2 cursor that can execute queries
+#     cursor = conn.cursor()
+#     # create a new table with a single column called "name"
+#     # cursor.execute("""CREATE TABLE tutorials (name char(40));""")
+#     # run a SELECT statement - no data in there, but we can try it
+#     cursor.execute("""SELECT * from Facebook""")
+#     conn.commit() # <--- makes sure the change is shown in the database
+#     rows = cursor.fetchall()
+#     print(rows)
+#     for i in rows:
+#         print(i, "\n")
+#     cursor.close()
+#     conn.close()
+# except Exception as e:
+#     print("Uh oh, can't connect. Invalid dbname, user or password?")
+#     print(e)
 
+
+import datetime
+# Previous_Date = datetime.datetime.today() - datetime.timedelta(days=1)
+# print (type(Previous_Date))
+
+Previous_Date = datetime.datetime.today() - datetime.timedelta(days=1)
+Previous_Date_Formatted = str(Previous_Date.strftime ('%Y-%m-%d')) # format the date to ddmmyyyy
+print (type(Previous_Date_Formatted))
 
 
 
@@ -416,37 +426,38 @@ except Exception as e:
 # # except AttributeError as e:
 # #    print("Error", AttributeError)
 
-# # print("The status was created at : " + str(status.created_at)) 
-# # print("The id is : " + str(status.id)) 
-# # print("The id_str is : " + status.id_str) 
-# # print("The text is : " + status.text) 
-# # text1=status.text.replace('&amp;', 'and')
-# # print("The text is : " + text1) 
-# # print("The entitities are : " + str(status.entities)) 
-# # print("The source is : " + status.source) 
-# # print("The source_url is : " + status.source_url) 
+# print(type(status.created_at)) 
+# print("The status was created at : " + str(status.created_at)) 
+# print("The id is : " + str(status.id)) 
+# print("The id_str is : " + status.id_str) 
+# print("The text is : " + status.text) 
+# text1=status.text.replace('&amp;', 'and')
+# print("The text is : " + text1) 
+# print("The entitities are : " + str(status.entities)) 
+# print("The source is : " + status.source) 
+# print("The source_url is : " + status.source_url) 
 
 
-# # print("The in_reply_to_status_id is : " + str(status.in_reply_to_status_id)) 
-# # print("The in_reply_to_status_id_str is : " + str(status.in_reply_to_status_id_str)) 
-# # print("The in_reply_to_user_id is : " + str(status.in_reply_to_user_id)) 
-# # print("The in_reply_to_user_id_str is : " + str(status.in_reply_to_user_id_str)) 
-# # print("The in_reply_to_screen_name is : " + str(status.in_reply_to_screen_name)) 
+# print("The in_reply_to_status_id is : " + str(status.in_reply_to_status_id)) 
+# print("The in_reply_to_status_id_str is : " + str(status.in_reply_to_status_id_str)) 
+# print("The in_reply_to_user_id is : " + str(status.in_reply_to_user_id)) 
+# print("The in_reply_to_user_id_str is : " + str(status.in_reply_to_user_id_str)) 
+# print("The in_reply_to_screen_name is : " + str(status.in_reply_to_screen_name)) 
 
 
-# # print("The poster's screen name is : " + status.user.screen_name) 
-# # print("The geo is : " + str(status.geo)) 
-# # print("The coordinates are : " + str(status.coordinates)) 
-# # print("The place is : " + str(status.place)) 
-# # print("The contributors are : " + str(status.contributors)) 
-# # print("The is_quote_status is : " + str(status.is_quote_status)) 
-# # print("The retweet_count is : " + str(status.retweet_count)) 
+# print("The poster's screen name is : " + status.user.screen_name) 
+# print("The geo is : " + str(status.geo)) 
+# print("The coordinates are : " + str(status.coordinates)) 
+# print("The place is : " + str(status.place)) 
+# print("The contributors are : " + str(status.contributors)) 
+# print("The is_quote_status is : " + str(status.is_quote_status)) 
+# print("The retweet_count is : " + str(status.retweet_count)) 
 # print("The favorite_count is : " + status.favorite_count) 
 
-# # print("Has the authenticated user favourited the status? : " + str(status.favorited)) 
-# # print("Has the authenticated user retweeted the status? " + str(status.retweeted)) 
-# # print("Is the status possibly_sensitive? : " + str(status.possibly_sensitive)) 
-# # print("The lang is : " + status.lang) 
+# print("Has the authenticated user favourited the status? : " + str(status.favorited)) 
+# print("Has the authenticated user retweeted the status? " + str(status.retweeted)) 
+# print("Is the status possibly_sensitive? : " + str(status.possibly_sensitive)) 
+# print("The lang is : " + status.lang) 
 
 
 # import settings

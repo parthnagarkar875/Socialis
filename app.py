@@ -18,6 +18,7 @@ import os
 import re
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import stopwords
+import psycopg2
 
 
 def local_css(file_name):
@@ -61,7 +62,10 @@ class Socialis:
 
     @staticmethod
     def connect_engine():
-        conn1 = sqlite3.connect('twitter.db')
+        connect_str = "dbname='test' user='postgres' host='localhost' " + \
+                "password='helloParth'"
+    
+        conn1 = psycopg2.connect(connect_str)
         return conn1
 
     # @st.cache(hash_funcs={FileReference: connect_engine}, suppress_st_warning=True, show_spinner=False,
@@ -179,7 +183,8 @@ class Socialis:
     @staticmethod
     def plot_usernames():
 
-        date_since = "2021-04-10"
+        Previous_Date = datetime.datetime.today() - datetime.timedelta(days=2)
+        date_since = str(Previous_Date.strftime ('%Y-%m-%d')) 
         auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
         auth.set_access_token(credentials.access_token, credentials.access_token_secret)
         api = tweepy.API(auth)

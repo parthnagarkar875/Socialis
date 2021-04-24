@@ -316,11 +316,11 @@ def main_method(status_queue):
 
         if a.check_conn(conn) == True:        
             cursor = conn.cursor()
-            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, users_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
-            val = (id_str, created_at, text, polarity, subjectivity, enti, user_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
+            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, users_list, user_created_at, user_location, user_description, user_followers_count, retweet_count, favorite_count) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)".format(settings.TABLE_NAME)
+            val = (id_str, created_at, text, polarity, subjectivity, enti, user_list, user_created_at, user_location, user_description, user_followers_count, retweet_count, favorite_count)
             cursor.execute(sql, val)
             conn.commit() 
-            print("Inserted")
+            print("\n\n\n\nInserted\n\n\n")
             cursor.close()
             conn.close()
 
