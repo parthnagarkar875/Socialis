@@ -24,40 +24,41 @@
 # sg=coco.convert(names=li, to='ISO3')
 # df = df[df.user_location.isin(sg)]
 
+import pandas as pd
+import psycopg2
 
-# import psycopg2
+try:
+    connect_str = "dbname='test' user='postgres' host='localhost' " + \
+                  "password='helloParth'"
+    # use our connection values to establish a connection
+    conn = psycopg2.connect(connect_str)
+    # create a psycopg2 cursor that can execute queries
+    cursor = conn.cursor()
+    # create a new table with a single column called "name"
+    # cursor.execute("""CREATE TABLE tutorials (name char(40));""")
+    # run a SELECT statement - no data in there, but we can try it
+    df=pd.read_sql("select * from Facebook", con=conn)
+    print(df.tail(5))
+    # cursor.execute("""SELECT created_at from Facebook""")
+    # conn.commit() # <--- makes sure the change is shown in the database
+    # rows = cursor.fetchall()
+    # print(rows)
+    # for i in rows:
+    #     print(i, "\n")
+    # cursor.close()
+    # conn.close()
+except Exception as e:
+    print("Uh oh, can't connect. Invalid dbname, user or password?")
+    print(e)
 
-# try:
-#     connect_str = "dbname='test' user='postgres' host='localhost' " + \
-#                   "password='helloParth'"
-#     # use our connection values to establish a connection
-#     conn = psycopg2.connect(connect_str)
-#     # create a psycopg2 cursor that can execute queries
-#     cursor = conn.cursor()
-#     # create a new table with a single column called "name"
-#     # cursor.execute("""CREATE TABLE tutorials (name char(40));""")
-#     # run a SELECT statement - no data in there, but we can try it
-#     cursor.execute("""SELECT * from Facebook""")
-#     conn.commit() # <--- makes sure the change is shown in the database
-#     rows = cursor.fetchall()
-#     print(rows)
-#     for i in rows:
-#         print(i, "\n")
-#     cursor.close()
-#     conn.close()
-# except Exception as e:
-#     print("Uh oh, can't connect. Invalid dbname, user or password?")
-#     print(e)
 
+# import datetime
+# # Previous_Date = datetime.datetime.today() - datetime.timedelta(days=1)
+# # print (type(Previous_Date))
 
-import datetime
 # Previous_Date = datetime.datetime.today() - datetime.timedelta(days=1)
-# print (type(Previous_Date))
-
-Previous_Date = datetime.datetime.today() - datetime.timedelta(days=1)
-Previous_Date_Formatted = str(Previous_Date.strftime ('%Y-%m-%d')) # format the date to ddmmyyyy
-print (type(Previous_Date_Formatted))
-
+# Previous_Date_Formatted = str(Previous_Date.strftime ('%Y-%m-%d')) # format the date to ddmmyyyy
+# print (type(Previous_Date_Formatted))
 
 
 

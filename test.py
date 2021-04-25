@@ -28,6 +28,7 @@ from multiprocessing import Process, Queue
 import multiprocessing
 import threading
 from time import time
+import datetime
 class MyStreamListener(tweepy.StreamListener):
     nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
     nlp1 = spacy.load('en_core_web_sm')
@@ -266,8 +267,10 @@ def main_method(status_queue):
         status=status_queue.get()
         final_text=a.get_full_text(status)    
         id_str = status.id_str
-        created_at = status.created_at
-        
+        time = status.created_at
+        hours_added = datetime.timedelta(hours = 5, minutes = 30)
+        created_at = time + hours_added
+
         # Removing "RT @username:" from the text
         if final_text[:2] == 'RT':
             result = final_text.index(':')
@@ -285,27 +288,13 @@ def main_method(status_queue):
             polarity=-1
         else:
             polarity = 0
-        subjectivity = sentiment.subjectivity
         enti=a.ner_tagging(text, 3)      # Named entity recognition
-        user_created_at = status.user.created_at
         temp_location = a.deEmojify(status.user.location)        
-        user_location=a.get_location(temp_location)        
-        user_description = a.deEmojify(status.user.description)
-        user_followers_count =status.user.followers_count
-        longitude = None
-        latitude = None
-        if status.coordinates:
-            longitude = status.coordinates['coordinates'][0]
-            latitude = status.coordinates['coordinates'][1]
-            
-        retweet_count = status.retweet_count
-        favorite_count = status.favorite_count
-        
+        user_location=a.get_location(temp_location)                
         # print(status.text)
         print(final_text)
         
         print(text)
-        print("Long: {}, Lati: {}".format(longitude, latitude))
 
         # myconn =sqlite3.connect('twitter.db')
 
@@ -316,8 +305,8 @@ def main_method(status_queue):
 
         if a.check_conn(conn) == True:        
             cursor = conn.cursor()
-            sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, users_list, user_created_at, user_location, user_description, user_followers_count, retweet_count, favorite_count) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)".format(settings.TABLE_NAME)
-            val = (id_str, created_at, text, polarity, subjectivity, enti, user_list, user_created_at, user_location, user_description, user_followers_count, retweet_count, favorite_count)
+            sql = "INSERT INTO {} (id_str, created_at, text, polarity, named_ent, users_list, user_location) VALUES (%s, %s, %s, %s, %s, %s, %s)".format(settings.TABLE_NAME)
+            val = (id_str, created_at, text, polarity, enti, user_list, user_location)
             cursor.execute(sql, val)
             conn.commit() 
             print("\n\n\n\nInserted\n\n\n")

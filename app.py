@@ -65,6 +65,9 @@ class Socialis:
                 "password='helloParth'"
     
         conn1 = psycopg2.connect(connect_str)
+    
+        # conn1 = sqlite3.connect('twitter.db')
+
         return conn1
 
     # @st.cache(hash_funcs={FileReference: connect_engine}, suppress_st_warning=True, show_spinner=False,
@@ -74,7 +77,7 @@ class Socialis:
         timenow = (datetime.datetime.utcnow() - datetime.timedelta(hours=0, minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
 
         extract_data = {
-            1: "SELECT * FROM {} WHERE created_at <= '{}' ".format(settings.TABLE_NAME, timenow),
+            1: "SELECT * FROM {} WHERE created_at >= '{}' ".format(settings.TABLE_NAME, timenow),
             "Overall": "select * from Facebook",
             "Positive": "select * from Facebook where polarity = 1",
             "Neutral": "select * from Facebook where polarity = 0",
@@ -88,13 +91,15 @@ class Socialis:
     # @st.cache(suppress_st_warning=True, show_spinner=False, allow_output_mutation=True)
     def plot_line(self):
         df1 = self.get_data(1)
+        print(df1)
         df = self.get_freq_country(df1)
         df['created_at'] = pd.to_datetime(df['created_at'])
+
         result = df.groupby([pd.Grouper(key='created_at', freq='2s'), 'polarity']).count().unstack(
             fill_value=0).stack().reset_index()
         result = result.rename(
-            columns={"id_str": "Num of '{}' mentions".format(settings.TRACK_WORDS[0]), "created_at": "Time in UTC"})
-        time_series = result["Time in UTC"][result['polarity'] == 0].reset_index(drop=True)
+            columns={"id_str": "Num of '{}' mentions".format(settings.TRACK_WORDS[0]), "created_at": "Time in IST"})
+        time_series = result["Time in IST"][result['polarity'] == 0].reset_index(drop=True)
 
         timefig = go.Figure()
         timefig.add_trace(go.Scatter(
@@ -126,8 +131,10 @@ class Socialis:
         df1 = pd.DataFrame.from_dict(counter, orient='index').reset_index()
         df1 = df1.rename(columns={'index': 'CODE', 0: 'COUNT'})
         country = list()
-        for i in df1['CODE']:
-            country.append(coco.convert(names=i, to='name_short'))
+        country=coco.convert(names=df1['CODE'].tolist(), to='name_short')
+        # country = list()
+        # for i in df1['CODE']:
+        #     country.append(coco.convert(names=i, to='name_short'))
         df1['COUNTRY'] = country
         g1 = go.Figure(go.Choropleth(
             locations=df1['CODE'],
