@@ -4,7 +4,6 @@ import streamlit as st
 st.set_page_config(layout="wide", page_title="Socialis", page_icon="socialis-logo.png")
 import pandas as pd
 import plotly.graph_objects as go
-import sqlite3
 import settings
 import datetime
 import credentials
@@ -19,6 +18,8 @@ import re
 from sklearn.feature_extraction.text import CountVectorizer
 from nltk.corpus import stopwords
 import psycopg2
+from tweepy import Stream
+from tweepy.streaming import StreamListener
 
 
 def local_css(file_name):
@@ -26,26 +27,34 @@ def local_css(file_name):
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 
-def remote_css(url):
-    st.markdown(f'<link href="{url}" rel="stylesheet">', unsafe_allow_html=True)
-
-
-def icon(icon_name):
-    st.markdown(f'<i class="material-icons">{icon_name}</i>', unsafe_allow_html=True)
-
-
 local_css("style.css")
 
-code = """<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><script>var intervalId = window.setInterval(function(){twttr.ready(() =>twttr.widgets.load(document.getElementById("stMarkdown")));}, 5000);</script>"""
-
+code = """<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><script>var intervalId = window.setInterval(function(){twttr.ready(() =>twttr.widgets.load(document.getElementById("stMarkdown")));}, 1000);</script>"""
 
 directory = os.path.dirname(st.__file__) + '/static/index.html'
 with open(directory, 'r') as file:
     data = file.read()
-    if len(re.findall('twttr.ready', data)) == 0:
+    if len(re.findall('https://platform.twitter.com/widgets.js', data)) == 0:
         with open(directory, 'w') as ff:
-            newdata = re.sub('<head>', '<head>'+code, data)
+            newdata = re.sub('<head>', '<head>' + code, data)
             ff.write(newdata)
+
+
+class TweetListener(StreamListener):
+
+    def on_error(self, status):
+        if status == 420:
+            # return False to disconnect the stream
+            return True
+
+    def on_status(self, status):
+        ist = status.created_at
+        hours_added = datetime.timedelta(hours=5, minutes=30)
+        created_at = ist + hours_added
+        st.markdown(
+            f'<blockquote><p>{status.text}</p>&mdash; {status.user.screen_name} <br>&mdash; {status.favorite_count} likes {created_at}</blockquote>',
+            unsafe_allow_html=True)
+        time.sleep(0.5)
 
 
 class FileReference:
@@ -54,20 +63,16 @@ class FileReference:
 
 
 class Socialis:
-
     col1, col2, col3 = st.beta_columns([1, 1, 1])
     splash = col2.image("socialis.gif", use_column_width=True)
     time.sleep(2)
     splash.empty()
 
     def connect_engine(self):
-        connect_str = "dbname='test' user='postgres' host='localhost' " + \
-                "password='helloParth'"
-    
-        conn1 = psycopg2.connect(connect_str)
-    
-        # conn1 = sqlite3.connect('twitter.db')
+        connect_str = f"dbname='{credentials.dbname}' user='{credentials.user}' host='{credentials.host}' " + \
+                      f"password='{credentials.password}'"
 
+        conn1 = psycopg2.connect(connect_str)
         return conn1
 
     # @st.cache(hash_funcs={FileReference: connect_engine}, suppress_st_warning=True, show_spinner=False,
@@ -78,10 +83,10 @@ class Socialis:
 
         extract_data = {
             1: "SELECT * FROM {} WHERE created_at >= '{}' ".format(settings.TABLE_NAME, timenow),
-            "Overall": "select * from Facebook",
-            "Positive": "select * from Facebook where polarity = 1",
-            "Neutral": "select * from Facebook where polarity = 0",
-            "Negative": "select * from Facebook where polarity = -1"
+            "Overall": f"select * from {settings.brand}",
+            "Positive": f"select * from {settings.brand} where polarity = 1",
+            "Neutral": f"select * from {settings.brand} where polarity = 0",
+            "Negative": f"select * from {settings.brand} where polarity = -1"
         }
 
         query = extract_data.get(data_select)
@@ -91,15 +96,13 @@ class Socialis:
     # @st.cache(suppress_st_warning=True, show_spinner=False, allow_output_mutation=True)
     def plot_line(self):
         df1 = self.get_data(1)
-        print(df1)
         df = self.get_freq_country(df1)
         df['created_at'] = pd.to_datetime(df['created_at'])
-
         result = df.groupby([pd.Grouper(key='created_at', freq='2s'), 'polarity']).count().unstack(
             fill_value=0).stack().reset_index()
         result = result.rename(
-            columns={"id_str": "Num of '{}' mentions".format(settings.TRACK_WORDS[0]), "created_at": "Time in IST"})
-        time_series = result["Time in IST"][result['polarity'] == 0].reset_index(drop=True)
+            columns={"id_str": "Num of '{}' mentions".format(settings.TRACK_WORDS[0]), "created_at": "Time in UTC"})
+        time_series = result["Time in UTC"][result['polarity'] == 0].reset_index(drop=True)
 
         timefig = go.Figure()
         timefig.add_trace(go.Scatter(
@@ -130,8 +133,7 @@ class Socialis:
         counter = collections.Counter(normal_names)
         df1 = pd.DataFrame.from_dict(counter, orient='index').reset_index()
         df1 = df1.rename(columns={'index': 'CODE', 0: 'COUNT'})
-        country = list()
-        country=coco.convert(names=df1['CODE'].tolist(), to='name_short')
+        country = coco.convert(names=df1['CODE'].tolist(), to='name_short')
         # country = list()
         # for i in df1['CODE']:
         #     country.append(coco.convert(names=i, to='name_short'))
@@ -188,12 +190,12 @@ class Socialis:
 
     def plot_usernames(self):
 
-        Previous_Date = datetime.datetime.today() - datetime.timedelta(days=2)
-        date_since = str(Previous_Date.strftime ('%Y-%m-%d')) 
+        previous_date = datetime.datetime.today() - datetime.timedelta(days=2)
+        date_since = str(previous_date.strftime('%Y-%m-%d'))
         auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
         auth.set_access_token(credentials.access_token, credentials.access_token_secret)
         api = tweepy.API(auth)
-        query = "(facebook) -facebook.com min_faves:500"
+        query = f"({settings.brand}) -{settings.brand}.com min_faves:500"
         status = api.search(query, lang="en", since=date_since, count=1000)
 
         like = dict()
@@ -211,7 +213,7 @@ class Socialis:
                 likes.append(i[1][0])
                 usernames.append(i[0])
                 tweet_id.append(i[1][1])
-            j = j+1
+            j = j + 1
 
         twcol1, twcol2 = st.beta_columns([1, 1])
         for i in range(0, 5):
@@ -278,11 +280,19 @@ class Socialis:
         g1 = go.Figure(go.Pie(labels=labels, values=val_list))
         return g1
 
+    def live_stream(self):
+
+        auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
+        auth.set_access_token(credentials.access_token, credentials.access_token_secret)
+        twitterStream = Stream(auth, TweetListener())
+        twitterStream.filter(languages=["en"], track=settings.TRACK_WORDS)
+
+
 
 st.sidebar.image("socialis-logo.svg")
 graph = st.sidebar.selectbox('Select a Graph to be plotted',
                              ('Time Series', 'World Map Plot', 'Named Entities', 'Word Cloud',
-                              'Influencers', 'Bigram', 'Volume Analysis', 'Highest Mentions'))
+                              'Influencers', 'Bigram', 'Volume Analysis', 'Highest Mentions', 'Livestream'))
 a = Socialis()
 
 if graph == "Time Series":
@@ -337,3 +347,7 @@ elif graph == 'Highest Mentions':
     fig = a.plot_bar(n, 2)
     fig.update_layout(autosize=False, height=600)
     st.plotly_chart(fig, use_container_width=True)
+
+elif graph == "Livestream":
+    st.header("Live Stream of Tweets")
+    a.live_stream()

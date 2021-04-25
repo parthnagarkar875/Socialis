@@ -1,12 +1,12 @@
 # import sqlite3
 # import pandas as pd
+# # # import country_converter as coco
+# # # from geopy.geocoders import Nominatim
+# # # import settings
+# # # import datetime
+# # import collections
 # # import country_converter as coco
-# # from geopy.geocoders import Nominatim
-# # import settings
-# # import datetime
-# import collections
-# import country_converter as coco
-# import pycountry
+# # import pycountry
 
 # conn1 = sqlite3.connect('twitter.db')
 # print("Opened the database successfully")
@@ -16,6 +16,7 @@
 # query="select * from Facebook"
 
 # df=pd.read_sql(query, con=conn1)
+# print(df.head())
 # str1="hello, bye"
 # print(str1.split(',').strip())
 # for i in df.users_list:
@@ -38,7 +39,7 @@ try:
     # cursor.execute("""CREATE TABLE tutorials (name char(40));""")
     # run a SELECT statement - no data in there, but we can try it
     df=pd.read_sql("select * from Facebook", con=conn)
-    print(df.tail(5))
+    print(df.head(5))
     # cursor.execute("""SELECT created_at from Facebook""")
     # conn.commit() # <--- makes sure the change is shown in the database
     # rows = cursor.fetchall()

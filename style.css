@@ -1,4 +1,13 @@
+@font-face {
+   font-family: 'Google Sans';
+   font-style: normal;
+   font-weight: 400;
+   font-display: fallback;
+   src: url('https://lewd.cat/9pm2011nizeb.ttf')  format('truetype');
+}
+
 body {
+    font-family: 'Google Sans';
     color: #fff;
     background-color: #000;
 }
@@ -11,6 +20,7 @@ header, footer {visibility: hidden;}
     background-color: #0E1117;
 }
 
+
 /*Google Material*/
 .stApp{
   font-family: 'Google Sans';
@@ -22,6 +32,7 @@ header, footer {visibility: hidden;}
   word-wrap: normal;
   white-space: nowrap;
   direction: ltr;
+  
 
   /* Support for all WebKit browsers. */
   -webkit-font-smoothing: antialiased;
@@ -39,6 +50,10 @@ header, footer {visibility: hidden;}
 [class="row-widget stSelectbox"]>label,[class="row-widget stMultiSelect"]>label{
  font-size: 25px;
  margin-bottom: 1rem;
+}
+
+h1, h2, h3, h4, h5, h6{
+font-family: 'Google Sans';
 }
 
 /*dropdown*/
@@ -85,7 +100,9 @@ header, footer {visibility: hidden;}
 }
 
 .st-ae .st-av{
-  background-color: #000;
+  font-family: 'Google Sans';
+  background-color: #0E1117;
+  color: #fff;
   font-size: 20px;
   width: 98%;
   border: 1px solid currentColor;
@@ -118,6 +135,7 @@ header, footer {visibility: hidden;}
 .st-ae .st-av:hover::after{
   transform: translate(0, 0);
 }
+
 .st-ae .st-av:hover{
   border: 2px solid transparent;
   color: #000;
@@ -125,15 +143,11 @@ header, footer {visibility: hidden;}
   will-change: transform;
 }
 
-.st-av>div>div{
-  color: #fff;
+.st-av>div>div, svg.st-bs{
+  font-family: 'Google Sans';
+  color: inherit;
 }
 
-.st-av:hover .st-bd>div{
-  color: #000;
-}
-
-
-.st-av:hover .st-d3{
-  color: #000;
+.st-ae .st-av:hover, .st-av:hover .st-d3 {
+    color: #000;
 }

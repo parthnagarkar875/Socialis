@@ -6,7 +6,6 @@ email = \"trollavin@gmail.com\"\n\
 " > ~/.streamlit/credentials.toml
 echo "\
 [server]\n\
-enableCORS=false\n\
 port = $PORT\n\
 \n\
 [theme]\n\
