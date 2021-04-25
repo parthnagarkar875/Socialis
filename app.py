@@ -126,7 +126,7 @@ class Socialis:
 
         return timefig
 
-    @st.cache(suppress_st_warning=True, show_spinner=False, allow_output_mutation=True)
+    # @st.cache(suppress_st_warning=True, show_spinner=False, allow_output_mutation=True)
     def plot_choro(self, choro_n):
         df = self.get_data(choro_n)
         normal_names = df["user_location"].dropna().tolist()
