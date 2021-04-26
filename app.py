@@ -41,6 +41,8 @@ with open(directory, 'r') as file:
 
 
 class TweetListener(StreamListener):
+    
+    twt=[st.empty()]*5
 
     def on_error(self, status):
         if status == 420:
@@ -51,11 +53,12 @@ class TweetListener(StreamListener):
         ist = status.created_at
         hours_added = datetime.timedelta(hours=5, minutes=30)
         created_at = ist + hours_added
-        st.markdown(
+        
+        for i in range(5):
+            TweetListener.twt[i]=st.markdown(
             f'<blockquote><p>{status.text}</p>&mdash; {status.user.screen_name} <br>&mdash; {status.favorite_count} likes {created_at}</blockquote>',
             unsafe_allow_html=True)
-        time.sleep(0.5)
-
+            time.sleep(0.5)
 
 class FileReference:
     def __init__(self, filename):
@@ -95,10 +98,10 @@ class Socialis:
 
     # @st.cache(suppress_st_warning=True, show_spinner=False, allow_output_mutation=True)
     def plot_line(self):
-        df1 = self.get_data(1)
+        df1 = self.get_data('Overall')
         df = self.get_freq_country(df1)
         df['created_at'] = pd.to_datetime(df['created_at'])
-        result = df.groupby([pd.Grouper(key='created_at', freq='2s'), 'polarity']).count().unstack(
+        result = df.groupby([pd.Grouper(key='created_at', freq='10s'), 'polarity']).count().unstack(
             fill_value=0).stack().reset_index()
         result = result.rename(
             columns={"id_str": "Num of '{}' mentions".format(settings.TRACK_WORDS[0]), "created_at": "Time in UTC"})
