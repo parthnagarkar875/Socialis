@@ -227,17 +227,6 @@ def stream():
         myconn.commit()
     cur.close()
 
-    # if myStreamListener.check_conn(myconn) == True:
-    #     mycursor = myconn.cursor()
-    #     try:
-    #         output=mycursor.execute("SELECT COUNT(*) FROM {}".format(settings.TABLE_NAME))
-    #         result=output.fetchall()
-    #     except OperationalError:
-    #         mycursor.execute("CREATE TABLE {} ({})".format(settings.TABLE_NAME, settings.TABLE_ATTRIBUTES))
-    #         mycursor.commit()
-
-    #     mycursor.close()
-
     try:
         myStream.filter(languages=["en"], track=settings.TRACK_WORDS)
     except Exception as e:
@@ -276,7 +265,7 @@ def main_method(status_queue):
             polarity = -1
         else:
             polarity = 0
-        enti = a.ner_tagging(text, 2)  # Named entity recognition
+        enti = a.ner_tagging(text, 3)  # Named entity recognition
         temp_location = a.deEmojify(status.user.location)
         user_location = a.get_location(temp_location)
 
@@ -298,18 +287,17 @@ def main_method(status_queue):
             val = (id_str, created_at, text, polarity, enti, user_list, user_location)
             cursor.execute(sql, val)
             conn.commit()
+
+            cursor.execute(f"""select count(*) as exactcount from {settings.brand}""")
+            rows = cursor.fetchall()
+            rowcount=rows[0][0]
+            if rowcount > 9000:
+                cursor.execute(f"""delete from {settings.brand} where id_str in (select id_str from {settings.brand} order by id_str ASC limit 1000)""")
+            
+            conn.commit()
             print("\n\n\n\nInserted\n\n\n")
             cursor.close()
             conn.close()
-
-        # if a.check_conn(myconn) == True:        
-        #     mycursor = myconn.cursor()
-        #     sql = "INSERT INTO {} (id_str, created_at, text, polarity, subjectivity, named_ent, users_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".format(settings.TABLE_NAME)
-        #     val = (id_str, created_at, text, polarity, subjectivity, enti, user_list, user_created_at, user_location, user_description, user_followers_count, longitude, latitude, retweet_count, favorite_count)
-        #     mycursor.execute(sql, val)
-        #     myconn.commit()
-        #     print("Inserted")
-        #     mycursor.close()
 
 status_queue = Queue()
 

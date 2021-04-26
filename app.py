@@ -175,11 +175,12 @@ class Socialis:
                 li.extend(te)
         else:
             for i in df["named_ent"]:
-                j = i.replace(" ", "")
-                te = j.split(",")
+                # j = i.replace(" ", "")
+                te = i.split(",")
                 li.extend(te)
                 # li.remove('RT')
 
+        print(li)
         li = list(filter(None, li))
         fdist = FreqDist(li)
         fd = pd.DataFrame(fdist.most_common(10), columns=["Word", "Frequency"]).drop([0]).reindex()
@@ -311,7 +312,7 @@ elif graph == "World Map Plot":
 elif graph == "Named Entities":
     st.header("Named Entities: Bar Graph")
     n = a.select_sentiment()
-    fig = a.plot_bar(n, 2)
+    fig = a.plot_bar(n, 3)
     fig.update_layout(autosize=False, height=600)
     st.plotly_chart(fig, use_container_width=True)
 

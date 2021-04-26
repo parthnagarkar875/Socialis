@@ -39,11 +39,12 @@ try:
     # cursor.execute("""CREATE TABLE tutorials (name char(40));""")
     # run a SELECT statement - no data in there, but we can try it
     df=pd.read_sql("select * from Facebook", con=conn)
-    print(df.head(5))
-    # cursor.execute("""SELECT created_at from Facebook""")
-    # conn.commit() # <--- makes sure the change is shown in the database
-    # rows = cursor.fetchall()
-    # print(rows)
+    print(len(df['id_str']))
+    cursor.execute("""select count(*) as exactcount from facebook""")
+    # cursor.execute("""delete from Facebook where id_str in (select id_str from facebook order by id_str ASC limit 5)""")
+    conn.commit() # <--- makes sure the change is shown in the database
+    rows = cursor.fetchall()
+    print(type(rows[0][0]))
     # for i in rows:
     #     print(i, "\n")
     # cursor.close()
