@@ -1,7 +1,7 @@
 import warnings
 warnings.simplefilter("ignore")
 import streamlit as st
-st.set_page_config(layout="wide", page_title="Socialis", page_icon="socialis-logo.png")
+st.set_page_config(layout="wide", page_title="Socialis", page_icon="resources/socialis-logo.png")
 import pandas as pd
 import plotly.graph_objects as go
 import settings
