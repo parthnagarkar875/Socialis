@@ -1,8 +1,0 @@
-consumer_key = 'dfnE4GMFosHwvp4zWjSizIkwv'
-consumer_secret = 'EYJGwbsKlSTdfJwrdcfSK9ZffnknilS2pfCZh4p5eiEToKo8JJ'
-access_token = '1350457320304746497-7lVxFWGBtASbRPXyWmtpWuwiPWYQf4'
-access_token_secret = 'o9zGaH7xuELuFzAW62D9h68Wbu7AGR6jwNBKJmdb4vJTE'
-dbname = 'test'
-user = 'postgres'
-host = 'localhost'
-password = 'helloParth'
