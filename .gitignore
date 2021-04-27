@@ -4,5 +4,6 @@ __pycache__/
 .git/
 socialis/
 .ipynb_checkpoints/
-credentials.py
 phase1.py
+credentials.py
+
