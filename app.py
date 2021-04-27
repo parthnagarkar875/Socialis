@@ -30,7 +30,7 @@ def local_css(file_name):
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 
-local_css("style.css")
+local_css("resources/style.css")
 
 code = """<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><script>var intervalId = window.setInterval(function(){twttr.ready(() =>twttr.widgets.load(document.getElementById("stMarkdown")));}, 1000);</script>"""
 
@@ -70,7 +70,7 @@ class FileReference:
 
 class Socialis:
     col1, col2, col3 = st.beta_columns([1, 1, 1])
-    splash = col2.image("socialis.gif", use_column_width=True)
+    splash = col2.image("resources/socialis.gif", use_column_width=True)
     time.sleep(2)
     splash.empty()
 
@@ -291,7 +291,7 @@ class Socialis:
 
 
 
-st.sidebar.image("socialis-logo.svg")
+st.sidebar.image("resources/socialis-logo.svg")
 graph = st.sidebar.selectbox('Select a Graph to be plotted',
                              ('Time Series', 'World Map Plot', 'Named Entities', 'Word Cloud',
                               'Influencers', 'Bigram', 'Volume Analysis', 'Highest Mentions', 'Livestream'))
