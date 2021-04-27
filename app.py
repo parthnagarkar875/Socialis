@@ -1,7 +1,7 @@
 import warnings
 warnings.simplefilter("ignore")
 import streamlit as st
-st.set_page_config(layout="wide", page_title="Socialis", page_icon="socialis-logo.png")
+st.set_page_config(layout="wide", page_title="Socialis", page_icon="resources/socialis-logo.png")
 import pandas as pd
 import plotly.graph_objects as go
 import settings
@@ -21,13 +21,16 @@ import psycopg2
 from tweepy import Stream
 from tweepy.streaming import StreamListener
 
+twtslot = 0
+twt = [st]*5
+
 
 def local_css(file_name):
     with open(file_name) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
 
-local_css("style.css")
+local_css("resources/style.css")
 
 code = """<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script><script>var intervalId = window.setInterval(function(){twttr.ready(() =>twttr.widgets.load(document.getElementById("stMarkdown")));}, 1000);</script>"""
 
@@ -42,8 +45,6 @@ with open(directory, 'r') as file:
 
 class TweetListener(StreamListener):
     
-    twt=[st.empty()]*5
-
     def on_error(self, status):
         if status == 420:
             # return False to disconnect the stream
@@ -54,11 +55,13 @@ class TweetListener(StreamListener):
         hours_added = datetime.timedelta(hours=5, minutes=30)
         created_at = ist + hours_added
         
-        for i in range(5):
-            TweetListener.twt[i]=st.markdown(
-            f'<blockquote><p>{status.text}</p>&mdash; {status.user.screen_name} <br>&mdash; {status.favorite_count} likes {created_at}</blockquote>',
-            unsafe_allow_html=True)
-            time.sleep(0.5)
+        if globals()['twtslot'] == 5:
+            globals()['twtslot'] = 0
+        globals()['twt'][globals()['twtslot']].markdown(f'<blockquote><p>{status.text}</p>&mdash; {status.user.screen_name} <br>&mdash; {status.favorite_count} likes {created_at}</blockquote>',
+                                                        unsafe_allow_html=True)
+        globals()['twtslot'] = globals()['twtslot'] + 1
+        time.sleep(0.5)
+
 
 class FileReference:
     def __init__(self, filename):
@@ -67,7 +70,7 @@ class FileReference:
 
 class Socialis:
     col1, col2, col3 = st.beta_columns([1, 1, 1])
-    splash = col2.image("socialis.gif", use_column_width=True)
+    splash = col2.image("resources/socialis.gif", use_column_width=True)
     time.sleep(2)
     splash.empty()
 
@@ -104,8 +107,8 @@ class Socialis:
         result = df.groupby([pd.Grouper(key='created_at', freq='10s'), 'polarity']).count().unstack(
             fill_value=0).stack().reset_index()
         result = result.rename(
-            columns={"id_str": "Num of '{}' mentions".format(settings.TRACK_WORDS[0]), "created_at": "Time in UTC"})
-        time_series = result["Time in UTC"][result['polarity'] == 0].reset_index(drop=True)
+            columns={"id_str": "Num of '{}' mentions".format(settings.TRACK_WORDS[0]), "created_at": "Time in IST"})
+        time_series = result["Time in IST"][result['polarity'] == 0].reset_index(drop=True)
 
         timefig = go.Figure()
         timefig.add_trace(go.Scatter(
@@ -137,9 +140,6 @@ class Socialis:
         df1 = pd.DataFrame.from_dict(counter, orient='index').reset_index()
         df1 = df1.rename(columns={'index': 'CODE', 0: 'COUNT'})
         country = coco.convert(names=df1['CODE'].tolist(), to='name_short')
-        # country = list()
-        # for i in df1['CODE']:
-        #     country.append(coco.convert(names=i, to='name_short'))
         df1['COUNTRY'] = country
         g1 = go.Figure(go.Choropleth(
             locations=df1['CODE'],
@@ -149,7 +149,6 @@ class Socialis:
             autocolorscale=False,
             marker_line_color='darkgrey',
             marker_line_width=0.3,
-            # colorbar_tickprefix='',
             colorbar_title='Number of tweets',
             uirevision='constant', ),
             layout=go.Layout(geo=dict(bgcolor='rgba(0,0,0,0)', landcolor='#333', subunitcolor='grey'),
@@ -288,12 +287,11 @@ class Socialis:
 
         auth = tweepy.OAuthHandler(credentials.consumer_key, credentials.consumer_secret)
         auth.set_access_token(credentials.access_token, credentials.access_token_secret)
-        twitterStream = Stream(auth, TweetListener())
-        twitterStream.filter(languages=["en"], track=settings.TRACK_WORDS)
+        Stream(auth, TweetListener()).filter(languages=["en"], track=settings.TRACK_WORDS)
 
 
 
-st.sidebar.image("socialis-logo.svg")
+st.sidebar.image("reources/socialis-logo.svg")
 graph = st.sidebar.selectbox('Select a Graph to be plotted',
                              ('Time Series', 'World Map Plot', 'Named Entities', 'Word Cloud',
                               'Influencers', 'Bigram', 'Volume Analysis', 'Highest Mentions', 'Livestream'))
@@ -354,4 +352,6 @@ elif graph == 'Highest Mentions':
 
 elif graph == "Livestream":
     st.header("Live Stream of Tweets")
+    for i in range(5):
+        twt[i] = st.empty()
     a.live_stream()

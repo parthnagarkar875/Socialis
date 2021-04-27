@@ -3,8 +3,7 @@ __pycache__/
 .vscode/
 .git/
 socialis/
-Dharmik/
 .ipynb_checkpoints/
-keys.py
+phase1.py
 credentials.py
-sampletest.py
+
