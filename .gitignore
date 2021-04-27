@@ -5,5 +5,4 @@ __pycache__/
 socialis/
 .ipynb_checkpoints/
 credentials.py
-sampletest.py
 phase1.py
