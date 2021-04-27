@@ -28,27 +28,35 @@
 import pandas as pd
 import psycopg2
 
+import psycopg2
+
+
+
 try:
-    connect_str = "dbname='test' user='postgres' host='localhost' " + \
+    connect_str = "dbname='socialis' port='5432' user='postgres' host='database-1.ctegb23zejri.us-east-2.rds.amazonaws.com' " + \
                   "password='helloParth'"
     # use our connection values to establish a connection
     conn = psycopg2.connect(connect_str)
     # create a psycopg2 cursor that can execute queries
     cursor = conn.cursor()
+    
     # create a new table with a single column called "name"
-    # cursor.execute("""CREATE TABLE tutorials (name char(40));""")
+    cursor.execute("""select pg_size_pretty(pg_database_size('socialis'));""")
+    # cursor.execute("""INSERT INTO tutorials (id) VALUES (5)""")
     # run a SELECT statement - no data in there, but we can try it
-    df=pd.read_sql("select * from Facebook", con=conn)
-    print(len(df['id_str']))
-    cursor.execute("""select count(*) as exactcount from facebook""")
+    # df=pd.read_sql("select * from tutorials", con=conn)
+    # print(df.head())
+    # print(len(df['id_str']))
+    # cursor.execute("""select count(*) as exactcount from facebook""")
     # cursor.execute("""delete from Facebook where id_str in (select id_str from facebook order by id_str ASC limit 5)""")
     conn.commit() # <--- makes sure the change is shown in the database
     rows = cursor.fetchall()
-    print(type(rows[0][0]))
+    # print(type(rows[0][0]))
+    print(rows)
     # for i in rows:
     #     print(i, "\n")
-    # cursor.close()
-    # conn.close()
+    cursor.close()
+    conn.close()
 except Exception as e:
     print("Uh oh, can't connect. Invalid dbname, user or password?")
     print(e)
