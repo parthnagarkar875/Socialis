@@ -291,7 +291,7 @@ def main_method(status_queue):
             cursor.execute(f"""select count(*) as exactcount from {settings.brand}""")
             rows = cursor.fetchall()
             rowcount=rows[0][0]
-            if rowcount > 9000:
+            if rowcount > 9800:
                 cursor.execute(f"""delete from {settings.brand} where id_str in (select id_str from {settings.brand} order by id_str ASC limit 1000)""")
             
             conn.commit()
