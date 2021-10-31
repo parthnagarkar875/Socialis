@@ -33,6 +33,28 @@ This graph plots the time series data plotting the number of tweets per unit of 
 This bar chart plots the most frequently mentioned words in the tweets containing the word 'Facebook'
 ![](https://github.com/parthnagarkar875/Socialis/blob/master/resources/Wordcloud.png)
 
+### Named Entity Plot
+This bar chart plots the most frequently mentioned named entities in the tweets containing the word 'Facebook'. 
+The named entities have been extracted using the Stanford's NER tagger. 
+![](https://github.com/parthnagarkar875/Socialis/blob/master/resources/NER.png)
+
+### Bigram Analysis Plot
+This bar chart plots the most frequently mentioned Bigrams in the tweets containing the word 'Facebook'. 
+![](https://github.com/parthnagarkar875/Socialis/blob/master/resources/BiGram.png)
+
+### Sentiment Volume Analysis Plot
+This pie chart plots the distribution of tweets based on their sentiments containing the word 'Facebook'.
+It can be observed that Neutral Tweets are the highest in number followed by Positive tweets and Negative tweets. 
+![](https://github.com/parthnagarkar875/Socialis/blob/master/resources/Volume.png)
+
+### Influencer Analysis
+Top 10 twitter users whose tweet containing the word 'Facebook' has received the highest engagement. 
+![](https://github.com/parthnagarkar875/Socialis/blob/master/resources/Influencer.png)
+
+### Most Popular User Analaysis
+Top 10 twitter users who were mentioned in the tweets containing the word 'Facebook'. 
+![](https://github.com/parthnagarkar875/Socialis/blob/master/resources/Most%20mentioned.png)
+
 <h3><a id="user-content-tech-stack-of-this-project" class="anchor" aria-hidden="true" href="#tech-stack-of-this-project"><svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Tech Stack of this Project:</h3>
 <ul>
 <li>Language: Python3</li>
